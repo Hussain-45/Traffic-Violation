@@ -213,9 +213,15 @@ async def upload_evidence(
     # Save results to DB
     detected_violations = []
     
+    # Batch query vehicles to optimize DB N+1 latency
+    plates = [v["plate"] for v in ai_result["vehicles"]]
+    db_vehicles = {}
+    if plates:
+        db_vehicles = {v.license_plate: v for v in db.query(Vehicle).filter(Vehicle.license_plate.in_(plates)).all()}
+
     for v_data in ai_result["vehicles"]:
-        # Find or create vehicle
-        vehicle = db.query(Vehicle).filter(Vehicle.license_plate == v_data["plate"]).first()
+        # Find or create vehicle using cached batch dict
+        vehicle = db_vehicles.get(v_data["plate"])
         is_stolen = False
         if vehicle and vehicle.status == "stolen":
             is_stolen = True
@@ -245,6 +251,7 @@ async def upload_evidence(
             db.add(vehicle)
             db.commit()
             db.refresh(vehicle)
+            db_vehicles[vehicle.license_plate] = vehicle
             
         v_data["is_stolen"] = is_stolen
             
@@ -363,9 +370,16 @@ async def upload_multiple_evidence(
         
         # Save results to DB
         detected_violations = []
+        
+        # Batch query vehicles to optimize DB N+1 latency
+        plates = [v["plate"] for v in ai_result["vehicles"]]
+        db_vehicles = {}
+        if plates:
+            db_vehicles = {v.license_plate: v for v in db.query(Vehicle).filter(Vehicle.license_plate.in_(plates)).all()}
+
         for v_data in ai_result["vehicles"]:
-            # Find or create vehicle
-            vehicle = db.query(Vehicle).filter(Vehicle.license_plate == v_data["plate"]).first()
+            # Find or create vehicle using cached batch dict
+            vehicle = db_vehicles.get(v_data["plate"])
             is_stolen = False
             if vehicle and vehicle.status == "stolen":
                 is_stolen = True
@@ -392,6 +406,7 @@ async def upload_multiple_evidence(
                 db.add(vehicle)
                 db.commit()
                 db.refresh(vehicle)
+                db_vehicles[vehicle.license_plate] = vehicle
                 
             v_data["is_stolen"] = is_stolen
                 

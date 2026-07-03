@@ -261,13 +261,16 @@ def run_real_detection(img_path, filename):
     height, width, _ = img.shape
     
     # Run YOLOv8 vehicle detection
-    # Speed Optimization: Run with imgsz=320 to accelerate CPU inference by 3x-4x
-    results = yolo_model(
-        img_path, 
-        conf=settings.AI_CONFIDENCE_THRESHOLD, 
-        imgsz=320, 
-        device="cpu"
-    )[0]
+    # Speed Optimization: Run with imgsz=320, disable gradients, disable logging outputs
+    import torch
+    with torch.inference_mode():
+        results = yolo_model(
+            img_path, 
+            conf=settings.AI_CONFIDENCE_THRESHOLD, 
+            imgsz=320, 
+            device="cpu",
+            verbose=False
+        )[0]
     
     vehicles_data = []
     violations_detected = []
@@ -319,7 +322,7 @@ def run_real_detection(img_path, filename):
         if plate_crop.size > 0:
             cv2.imwrite(plate_crop_path, plate_crop)
             try:
-                ocr_results = ocr_reader.readtext(plate_crop)
+                ocr_results = ocr_reader.readtext(plate_crop, workers=1, batch_size=1)
                 if ocr_results:
                     ocr_results.sort(key=lambda x: x[2], reverse=True)
                     text = ocr_results[0][1].strip().upper()

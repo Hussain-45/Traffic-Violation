@@ -3,3 +3,16 @@ Traceback (most recent call last):
   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
     version = _bcrypt.__about__.__version__
 AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-07-03 23:34:23,379 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 200 - Duration: 463.55ms
+2026-07-03 23:34:25,438 [INFO] STVDS: HTTP GET /api/v1/cameras - Status: 200 - Duration: 8.91ms
+2026-07-03 23:34:27,490 [INFO] STVDS: HTTP GET /api/v1/violations - Status: 200 - Duration: 14.60ms
+2026-07-03 23:34:29,534 [INFO] STVDS: HTTP GET /api/v1/fines/rules - Status: 200 - Duration: 10.43ms
+2026-07-03 23:34:31,599 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.69ms
+2026-07-03 23:34:34,491 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 2.58ms
+2026-07-03 23:34:34,502 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 3.75ms
+2026-07-03 23:34:43,406 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 4.70ms
+2026-07-03 23:34:43,418 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 7.53ms
+2026-07-03 23:34:49,635 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 3.65ms
+2026-07-03 23:34:49,642 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 3.40ms
+2026-07-03 23:35:01,330 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 3.06ms
+2026-07-03 23:35:01,339 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 3.45ms
