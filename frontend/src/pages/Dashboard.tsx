@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../components/ui/table";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "../App";
 import {
   TrendingUp,
   AlertTriangle,
@@ -140,6 +141,41 @@ const VIOLATIONS_POOL = [
 export default function Dashboard() {
   const [summary, setSummary] = useState<SummaryStats>(mockSummary);
   const [activities, setActivities] = useState<ActivityRecord[]>(mockActivities);
+  
+  const [sysResources, setSysResources] = useState({
+    cpu: 21.4,
+    ram: 44.1,
+    gpu_available: false,
+    gpu: 0.0,
+    disk: 44.5,
+    threads: 12
+  });
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard/system-health`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSysResources(data);
+        }
+      } catch (err) {
+        // Fallback simulation updates
+        setSysResources((prev) => ({
+          ...prev,
+          cpu: Math.floor(Math.random() * 10) + 15,
+          ram: Math.floor(Math.random() * 5) + 40,
+          threads: Math.floor(Math.random() * 4) + 10
+        }));
+      }
+    };
+
+    fetchResources();
+    const interval = setInterval(fetchResources, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const triggerSimulatedIncident = () => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -390,65 +426,142 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Recent Activity Table */}
-      <Card className="glass-card shadow-sm overflow-hidden p-0">
-        <CardHeader className="p-5 border-b border-slate-200/40 dark:border-slate-850/40 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Recent Activity logs
+      {/* Bottom Grid: Recent Activity & System Health */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column (Recent Activity Table) */}
+        <div className="lg:col-span-2">
+          <Card className="glass-card shadow-sm overflow-hidden p-0 h-full">
+            <CardHeader className="p-5 border-b border-slate-200/40 dark:border-slate-850/40 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Recent Activity logs
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-550 mt-0.5">
+                  Latest AI detection events recorded across city networks.
+                </CardDescription>
+              </div>
+              <Link to="/violations">
+                <Button variant="ghost" size="sm" className="text-[10px] font-bold text-blue-500 flex items-center gap-1">
+                  Violations Registry <ExternalLink size={12} />
+                </Button>
+              </Link>
+            </CardHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Incident</TableHead>
+                  <TableHead>License Plate</TableHead>
+                  <TableHead>Violation Type</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Fine Tariff</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {activities.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-bold text-slate-455">#{item.id}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold text-[9px] py-0.5 px-2">
+                        {item.plate}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-extrabold text-slate-700 dark:text-slate-200 text-xs">
+                      {item.type}
+                    </TableCell>
+                    <TableCell className="text-slate-555 font-semibold flex items-center gap-1 mt-2.5">
+                      <MapPin size={10} className="shrink-0 text-slate-400" />
+                      {item.location}
+                    </TableCell>
+                    <TableCell className="text-slate-400 text-[10px]">{item.timestamp}</TableCell>
+                    <TableCell className="font-extrabold text-slate-800 dark:text-slate-100">
+                      ₹{item.fine_amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={item.status === "paid" ? "success" : item.status === "resolved" ? "secondary" : "destructive"} className="text-[8px] py-0 px-2 font-bold">
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
+
+        {/* Right Column (System Health Dashboard) */}
+        <div className="lg:col-span-1">
+          <Card className="glass-card p-5 h-full space-y-4 border-blue-500/10 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Activity size={15} className="text-blue-500 animate-pulse" />
+                System Health
+              </span>
+              <Badge variant="outline" className="text-[8px] border-emerald-500/30 text-emerald-550 font-bold py-0.5 animate-pulse text-emerald-400">
+                ONLINE
+              </Badge>
             </CardTitle>
-            <CardDescription className="text-[10px] text-slate-550 mt-0.5">
-              Latest AI detection events recorded across city networks.
-            </CardDescription>
-          </div>
-          <Link to="/violations">
-            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-blue-500 flex items-center gap-1">
-              Violations Registry <ExternalLink size={12} />
-            </Button>
-          </Link>
-        </CardHeader>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Incident</TableHead>
-              <TableHead>License Plate</TableHead>
-              <TableHead>Violation Type</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Timestamp</TableHead>
-              <TableHead>Fine Tariff</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {activities.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-bold text-slate-450">#{item.id}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold text-[9px] py-0.5 px-2">
-                    {item.plate}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-extrabold text-slate-700 dark:text-slate-200 text-xs">
-                  {item.type}
-                </TableCell>
-                <TableCell className="text-slate-550 font-semibold flex items-center gap-1 mt-2.5">
-                  <MapPin size={10} className="shrink-0 text-slate-400" />
-                  {item.location}
-                </TableCell>
-                <TableCell className="text-slate-400 text-[10px]">{item.timestamp}</TableCell>
-                <TableCell className="font-extrabold text-slate-800 dark:text-slate-100">
-                  ₹{item.fine_amount.toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={item.status === "paid" ? "success" : item.status === "resolved" ? "secondary" : "destructive"} className="text-[8px] py-0 px-2 font-bold">
-                    {item.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+            
+            <div className="space-y-4 text-xs font-semibold mt-3 text-slate-800 dark:text-slate-200">
+              {/* CPU Progress Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-450 uppercase font-bold">CPU Usage</span>
+                  <strong className="text-slate-800 dark:text-slate-100">{sysResources.cpu}%</strong>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-blue-500 h-full rounded-full transition-all duration-500" style={{ width: `${sysResources.cpu}%` }}></div>
+                </div>
+              </div>
+
+              {/* RAM Progress Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-450 uppercase font-bold">RAM Usage</span>
+                  <strong className="text-slate-800 dark:text-slate-100">{sysResources.ram}%</strong>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${sysResources.ram}%` }}></div>
+                </div>
+              </div>
+
+              {/* GPU Progress Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-450 uppercase font-bold">GPU Load (PyTorch CUDA)</span>
+                  <strong className="text-slate-800 dark:text-slate-100">
+                    {sysResources.gpu_available ? `${sysResources.gpu}%` : 'Not Available (CPU mode)'}
+                  </strong>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-purple-500 h-full rounded-full transition-all duration-500" style={{ width: `${sysResources.gpu_available ? sysResources.gpu : 0}%` }}></div>
+                </div>
+              </div>
+
+              {/* Disk Progress Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-455 uppercase font-bold">Disk Space Usage</span>
+                  <strong className="text-slate-800 dark:text-slate-100">{sysResources.disk}%</strong>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${sysResources.disk}%` }}></div>
+                </div>
+              </div>
+
+              {/* Active Threads Counter */}
+              <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-slate-850/40 mt-1">
+                <span className="text-slate-455 uppercase text-[9px] font-bold">Active Threads</span>
+                <span className="text-slate-700 dark:text-slate-300 font-mono text-[11px] font-extrabold">{sysResources.threads} threads</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+      </div>
 
     </div>
   );
