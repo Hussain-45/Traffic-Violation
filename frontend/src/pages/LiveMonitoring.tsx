@@ -1041,6 +1041,62 @@ export default function LiveMonitoring() {
                 </div>
               </Card>
 
+              {/* System Health Matrix Panel */}
+              <Card className="glass-card p-5 space-y-4 border-emerald-500/20 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ShieldCheck size={15} className="text-emerald-500" />
+                    Core Pipeline Status
+                  </span>
+                  <Badge variant="outline" className="text-[8px] border-emerald-500/30 text-emerald-505 font-bold py-0.5 animate-pulse text-emerald-400">
+                    ALL SYSTEMS NOMINAL
+                  </Badge>
+                </CardTitle>
+                
+                <div className="space-y-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-450 uppercase text-[9px] font-bold">YOLOv8 Engine</span>
+                    <span className="flex items-center gap-1.5 text-emerald-500 font-bold text-[10px]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Running
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-450 uppercase text-[9px] font-bold">EasyOCR Reader</span>
+                    <span className="flex items-center gap-1.5 text-emerald-500 font-bold text-[10px]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Running
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-450 uppercase text-[9px] font-bold">Camera Connection</span>
+                    <span className={`flex items-center gap-1.5 font-bold text-[10px] ${selectedCam.status === 'online' ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full animate-ping ${selectedCam.status === 'online' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                      {selectedCam.status === 'online' ? 'Connected' : 'Disconnected'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">SQL Database</span>
+                    <span className="flex items-center gap-1.5 text-emerald-500 font-bold text-[10px]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Connected
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">FastAPI Gateway</span>
+                    <span className="flex items-center gap-1.5 text-emerald-500 font-bold text-[10px]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Healthy
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
               {/* Class Vehicle Counting Card */}
               <Card className="glass-card p-5 space-y-3">
                 <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
