@@ -17,6 +17,7 @@ class User(Base):
 
     logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
 
 
 class Location(Base):
@@ -145,3 +146,17 @@ class ActivityLog(Base):
     ip_address = Column(String, nullable=True)
 
     user = relationship("User", back_populates="logs")
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    type = Column(String, nullable=False)  # fine, officer, system, camera
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="notifications")

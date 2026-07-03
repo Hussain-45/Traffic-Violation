@@ -259,6 +259,17 @@ async def upload_evidence(
             db.refresh(violation)
             detected_violations.append(violation)
             
+            # Auto-generate fine alert notification and log email status
+            from backend.app.models import Notification
+            notif = Notification(
+                user_id=current_user.id,
+                title="Fine Challan Generated",
+                message=f"New {viol['type'].replace('_', ' ').title()} logged for Vehicle {vehicle.license_plate} at {camera.location}. Fine: ₹{fine_val} [Email Dispatched]",
+                type="fine"
+            )
+            db.add(notif)
+            db.commit()
+            
     # Audit log
     log = ActivityLog(
         user_id=current_user.id,
@@ -375,6 +386,17 @@ async def upload_multiple_evidence(
                 db.refresh(violation)
                 detected_violations.append(violation)
                 total_violations += 1
+                
+                # Auto-generate fine alert notification and log email status
+                from backend.app.models import Notification
+                notif = Notification(
+                    user_id=current_user.id,
+                    title="Fine Challan Generated",
+                    message=f"New {viol['type'].replace('_', ' ').title()} logged for Vehicle {vehicle.license_plate} at {camera.location}. Fine: ₹{fine_val} [Email Dispatched]",
+                    type="fine"
+                )
+                db.add(notif)
+                db.commit()
 
         results.append({
             "filename": file.filename,

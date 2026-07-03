@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.app.config import settings
 from backend.app.database import engine, Base
-from backend.app.routes import auth, violations, cameras, dashboard, analytics, users, settings as settings_routes, locations, reports, fines
+from backend.app.routes import auth, violations, cameras, dashboard, analytics, users, settings as settings_routes, locations, reports, fines, notifications
 from backend.app.utils.seed import seed_db
 
 app = FastAPI(
@@ -46,6 +46,7 @@ app.include_router(settings_routes.router, prefix=settings.API_V1_STR)
 app.include_router(locations.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
 app.include_router(fines.router, prefix=settings.API_V1_STR)
+app.include_router(notifications.router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def startup_event():

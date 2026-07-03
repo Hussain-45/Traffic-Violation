@@ -233,8 +233,34 @@ def seed_db():
                 )
                 db.add(payment)
 
+        # 8. Notifications
+        from backend.app.models import Notification
+        mock_notifs = [
+            Notification(
+                user_id=admin_user.id,
+                title="System Boot Completed",
+                message="Smart Traffic Violation Detection System (STVDS) is fully configured and online.",
+                type="system",
+                is_read=True
+            ),
+            Notification(
+                user_id=admin_user.id,
+                title="Camera Offline warning: CAM-004",
+                message="Critical connection timeout at AIIMS Crossing Main Feed. Diagnostic health marked critical.",
+                type="camera",
+                is_read=False
+            ),
+            Notification(
+                user_id=admin_user.id,
+                title="Official fine policy modified",
+                message="Super Admin updated the fine tariff guidelines for Overspeeding to ₹1,000.",
+                type="officer",
+                is_read=False
+            )
+        ]
+        db.add_all(mock_notifs)
+
         # Audit logs for seeding
-        admin_user = db.query(User).filter(User.username == "admin").first()
         log = ActivityLog(
             user_id=admin_user.id,
             action="System initialized and seeded mock historical dataset."
