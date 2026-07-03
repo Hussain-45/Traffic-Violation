@@ -1109,6 +1109,48 @@ export default function LiveMonitoring() {
                 </div>
               </Card>
 
+              {/* AI Confidence Gauge Card */}
+              <Card className="glass-card p-5 space-y-4 border-blue-500/10 shadow-lg relative overflow-hidden flex flex-col items-center">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 w-full justify-start">
+                  <Activity size={15} className="text-blue-500 animate-pulse" />
+                  AI Confidence Gauge
+                </CardTitle>
+                
+                <div className="relative flex items-center justify-center my-2">
+                  <svg className="w-28 h-28 transform -rotate-90">
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="46"
+                      className="stroke-slate-200 dark:stroke-slate-800"
+                      strokeWidth="8"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="46"
+                      className="stroke-blue-500"
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray="289"
+                      strokeDashoffset={289 - (289 * 98) / 100}
+                      strokeLinecap="round"
+                      style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center">
+                    <span className="text-2xl font-extrabold tracking-tight text-slate-800 dark:text-slate-100">98%</span>
+                    <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-widest">Confidence</span>
+                  </div>
+                </div>
+
+                <div className="text-[9.5px] text-slate-400 font-semibold text-center mt-1 w-full bg-slate-900/40 p-2 rounded-xl border border-white/5">
+                  🛡️ Active YOLOv8 Model: High Reliability State
+                </div>
+              </Card>
+
               {/* Class Vehicle Counting Card */}
               <Card className="glass-card p-5 space-y-3">
                 <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
