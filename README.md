@@ -4,29 +4,66 @@ A production-quality, smart city government dashboard designed for automated tra
 
 ---
 
-## 🏗️ Tech Stack
+## 🏗️ Core Technology Stack
 
-### Frontend
-- **React (Vite)**
-- **Tailwind CSS** (Custom dark/light themes & glassmorphism configurations)
-- **Framer Motion** (Micro-animations, modal entries, layout transitions)
-- **Recharts** (Visual graphs for peak hours, traffic trends, and revenues)
-- **React Router Dom** (Role-based protected views)
-- **Lucide Icons** (Streamlined HUD system icons)
+### Frontend Hub
+- **React (Vite + TypeScript)**: Type-safe, high-performance UI structure.
+- **Tailwind CSS v4**: Built natively with the `@tailwindcss/vite` compiler plugin for sleek grid designs.
+- **Framer Motion**: Smooth micro-animations, slide-over sheets, and alert transitions.
+- **Recharts**: Responsive chart libraries for monthly/daily violations, vehicle ratios, and collections.
+- **React Router**: Protected router guards with role-based validation.
+- **Lucide Icons**: Modern vector icon libraries for HUD status dashboards.
 
-### Backend
-- **FastAPI** (High performance, type-safe Python API endpoints)
-- **SQLAlchemy** (Object Relational Mapping)
-- **Pandas & Openpyxl** (Reporting data formatting and Excel exports)
+### API Backend
+- **FastAPI**: Asynchronous Python web framework with auto-generated Swagger UI docs.
+- **SQLAlchemy ORM**: Database mapping configurations.
+- **Python-Multipart & Uvicorn**: Direct media upload handling and HTTP server.
+- **Pandas & Openpyxl**: Dynamic CSV/XLSX export spreadsheets creation.
 
-### Database
-- **SQLite** (Default local file-based database for zero-config run)
-- **PostgreSQL** (Production-ready container setup)
+### Database Layer
+- **SQLite**: Local file database for zero-config rapid local runs.
+- **PostgreSQL**: Production-ready containerized relational database.
 
-### AI / ML (Dual-Mode Pipeline)
-- **YOLOv8** (Vehicle tracking and signals detections)
-- **EasyOCR** (License plate character extraction)
-- **OpenCV** (Image overlays, frame captures, and canvas feeds drawing)
+### AI Inference Pipeline (Dual-Mode)
+- **YOLOv8**: Object tracking models mapping vehicle boxes and signal lights.
+- **EasyOCR**: Optical Character Recognition engine isolating license plate numbers.
+- **OpenCV**: Image overlays, cropping, and dynamic HTML5 Canvas rendering.
+
+---
+
+## ⚙️ How the AI Pipeline Works
+
+The system includes a **Dual-Mode AI Engine** configurable via settings to accommodate different hardware resources:
+
+```mermaid
+flowchart TD
+    A[Traffic Camera Input / Uploaded Media] --> B{AI Pipeline Switch}
+    B -- Active Mode --> C[YOLOv8 Object Detection]
+    B -- Simulated Mode --> D[OpenCV Physics Engine]
+    
+    C --> C1[Vehicle Tracking & Classification]
+    C --> C2[Traffic Light State Detection]
+    C --> C3[Infraction Verification]
+    
+    D --> D1[Mock Speed & Trajectory Tracker]
+    D --> D2[Randomized Infraction Generator]
+    
+    C1 & C2 & C3 --> E[License Plate ROI Crop]
+    D1 & D2 --> E
+    
+    E --> F{AI OCR Mode}
+    F -- Active Mode --> G[EasyOCR Character Recognition]
+    F -- Simulated Mode --> H[Plate String Deterministic Mock]
+    
+    G & H --> I[FastAPI REST API Backend]
+    I --> J[JSON Web Token Validation]
+    J --> K[PostgreSQL / SQLite Database Write]
+    
+    K --> L[React Frontend Dashboard]
+    L --> L1[Visual Telecharts & Graphs]
+    L --> L2[Live Canvas Monitor HUD Stream]
+    L --> L3[Excel/CSV Analytics Reports]
+```
 
 ---
 
@@ -37,103 +74,104 @@ Traffic Violation/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   └── detector.py       # YOLOv8 & EasyOCR execution (dual-mode)
+│   │   │   └── detector.py       # YOLOv8 & EasyOCR model switch
 │   │   ├── auth/
-│   │   │   └── jwt.py            # JWT token verification and pass hashes
+│   │   │   └── jwt.py            # JWT token creation and password hashes
 │   │   ├── routes/
-│   │   │   ├── auth.py           # Login, registry and user profiling
-│   │   │   ├── violations.py     # Image/Video uploads & AI trigger CRUDs
-│   │   │   ├── cameras.py        # CCTV registration & online controllers
-│   │   │   ├── dashboard.py      # Telemetry summary trackers
-│   │   │   ├── analytics.py      # Excel exports & charts calculations
-│   │   │   ├── users.py          # Admin officer access controls
-│   │   │   └── settings.py       # Threshold sliders & tariff modifiers
-│   │   ├── config.py             # Settings, directories, thresholds
-│   │   ├── database.py           # DB sessions
-│   │   ├── models.py             # Database SQLAlchemy Schemas
-│   │   ├── utils/
-│   │   │   └── seed.py           # Database tables seeder
+│   │   │   ├── auth.py           # Login, registration, and user profiles
+│   │   │   ├── violations.py     # Image/Video upload endpoints
+│   │   │   ├── cameras.py        # CCTV registration controllers
+│   │   │   ├── dashboard.py      # Summary metrics resolvers
+│   │   │   ├── analytics.py      # Charts and spreadsheet exporters
+│   │   │   ├── users.py          # Officer administration controls
+│   │   │   └── settings.py       # Fine amounts and AI threshold config
+│   │   ├── config.py             # System directories and configurations
+│   │   ├── database.py           # DB connection sessions
+│   │   ├── models.py             # Database SQLAlchemy schemas
 │   │   └── main.py               # Main entry point & static folder mounts
-│   ├── requirements.txt          # Python packages
-│   └── Dockerfile                # Backend container script
+│   ├── requirements.txt          # Python dependencies
+│   └── Dockerfile                # Backend container config
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Sidebar.jsx       # Custom collapsible sidebar
+│   │   │   ├── Sidebar.tsx       # Collapsible side navigation
+│   │   │   └── Topbar.tsx        # Breadcrumbs, themes, notifications, and user logs
+│   │   ├── components/ui/        # Reusable shadcn-style primitives
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   └── tabs.tsx
 │   │   ├── pages/
-│   │   │   ├── Login.jsx         # Glassmorphic OAuth2 secure portal
-│   │   │   ├── Dashboard.jsx     # Active telemetry stats & logs charts
-│   │   │   ├── LiveMonitoring.jsx# Live canvas traffic flow drawing
-│   │   │   ├── Upload.jsx        # Drag & drop media file processor
-│   │   │   ├── Violations.jsx    # Table grid data search & actions drawer
-│   │   │   ├── Analytics.jsx     # CSV/XLSX export & metric desks
-│   │   │   ├── Map.jsx           # SVG Delhi sectors coordinates map
-│   │   │   ├── Cameras.jsx       # Camera checklist registrations
-│   │   │   ├── Users.jsx         # Officer access permissions controls
-│   │   │   └── Settings.jsx      # Fine amounts tariff configuration
-│   │   ├── App.jsx               # Auth & Theme providers & router
-│   │   ├── index.css             # Light/Dark variables & scrollbars
-│   │   └── main.jsx              # Vite React entry point
-│   ├── index.html                # App template
-│   ├── package.json              # Front-end dependencies
-│   ├── tailwind.config.js        # CSS classes mappings
-│   ├── postcss.config.js         # Tailwind builder config
-│   └── Dockerfile                # Frontend Nginx server script
-├── docker-compose.yml            # System docker orchestration
-├── run.bat                       # Local concurrent batch launcher
+│   │   │   ├── Login.tsx         # Secure login and credentials reset
+│   │   │   ├── Dashboard.tsx     # KPI metrics, line/donut charts, and simulation triggers
+│   │   │   ├── LiveMonitoring.tsx# Multi-camera grid, filters, and canvas stream
+│   │   │   ├── Upload.tsx        # Bounding box crop upload engine
+│   │   │   ├── Violations.tsx    # Violations table database with action sheets
+│   │   │   ├── Analytics.tsx     # Downloadable data reports dashboard
+│   │   │   ├── Map.tsx           # Delhi sectors GPS coordinate map
+│   │   │   ├── Cameras.tsx       # Camera registries checklist
+│   │   │   ├── Users.tsx         # Officer roles dashboard
+│   │   │   └── Settings.tsx      # Fine rules tariff configuration
+│   │   ├── App.tsx               # Auth/Theme providers and router guards
+│   │   ├── index.css             # Tailwind imports & CSS custom properties
+│   │   └── main.tsx              # React Vite entrypoint
+│   ├── index.html                # App template index
+│   ├── package.json              # Frontend packages
+│   └── vite.config.ts            # Vite compilers path resolvers
+├── docker-compose.yml            # Multi-service docker orchestration
+├── run.bat                       # One-click Windows concurrent launcher
 └── README.md                     # Documentation
 ```
 
 ---
 
-## 🤖 Dual-Mode AI Pipeline
+## 🔒 Default Logins
 
-To ensure the system is completely reliable and works out of the box in CPU-constrained local developer environments, the AI Engine contains a **Dual-Mode execution switcher**:
-
-1. **Active AI Mode** (`AI_MODE=active`): 
-   The system attempts to import and initialize the PyTorch-based `ultralytics` (YOLOv8) and `easyocr` packages. It downloads the weights automatically, runs live object bounding box extraction on uploaded images/videos, isolates plates, runs character extraction, and saves cropped assets.
-2. **Simulated AI Mode** (`AI_MODE=simulated`): 
-   If libraries fail to load (or if manually toggled in settings), the system uses OpenCV to draw moving boxes, calculate speeds, crop deterministic mock license plate regions, and trigger random violations (e.g. speeding, signal jumps) to mock live CCTV monitoring networks.
-
----
-
-## 🔒 Pre-configured Credentials
-
-The database is automatically pre-populated with default security roles on launch:
+On initial launch, the database seeds default credentials:
 
 | Username | Password | Role | Description |
 | :--- | :--- | :--- | :--- |
-| **`admin`** | `admin123` | **Admin** | Access to all logs, officer registrations, and system configurations. |
-| **`officer`** | `officer123` | **Officer** | Access to dashboards, live camera telemetry, and violation resolution. |
+| **`admin`** | `admin123` | **admin** | Access to all logs, officer registrations, and system configurations. |
+| **`officer`** | `officer123` | **officer** | Access to dashboards, live camera telemetry, and violation resolution. |
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 Installation & Local Execution
 
-### 1. Backend Service
-Make sure you have Python 3.10+ installed:
+### 1. Python FastAPI Backend
+Make sure you have **Python 3.10+** installed:
 ```bash
-# Navigate to backend
+# Navigate to backend folder
 cd backend
 
-# Install dependencies (highly recommended in a virtual environment)
+# Create a virtual environment
+python -m venv venv
+# Activate it (Windows)
+.\venv\Scripts\activate
+# Activate it (macOS/Linux)
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
 # Start Server
 python -m uvicorn app.main:app --reload --port 8000
 ```
-API Documentation will be available at [http://localhost:8000/docs](http://localhost:8000/docs).
+Swagger API docs will be active at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-### 2. Frontend Development Server
-Make sure you have Node.js 18+ installed:
+### 2. Vite React Frontend
+Make sure you have **Node.js 18+** installed:
 ```bash
-# Navigate to frontend
+# Navigate to frontend folder
 cd frontend
 
-# Install packages
+# Install node dependencies
 npm install
 
-# Run dev server
+# Start Vite dev server
 npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
@@ -141,14 +179,14 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ---
 
 ## 🖥️ Running on Windows (One-Click)
-Run the `run.bat` file located in the root folder. It will concurrently open two console terminals to launch both servers.
+Double-click the `run.bat` script in the root directory. It automatically opens two terminal windows and launches both the backend and frontend dev servers concurrently.
 
 ---
 
 ## 🐳 Running with Docker
-Run the whole system in a containerized environment (orchestrating PostgreSQL, FastAPI, and Nginx for React) with a single command:
+Orchestrate the entire platform (PostgreSQL, FastAPI, and Nginx for React) using:
 ```bash
 docker-compose up --build
 ```
-- **React Frontend**: [http://localhost](http://localhost) (mapped on standard port 80)
-- **FastAPI Backend Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **React Portal**: [http://localhost](http://localhost) (Port 80)
+- **FastAPI Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
