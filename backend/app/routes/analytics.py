@@ -13,15 +13,40 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 @router.get("/charts")
 def get_analytics_charts(
+    time_span: str | None = None,
+    camera_id: str | None = None,
+    officer_id: int | None = None,
+    violation_type: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Build dynamic filter predicates list
+    filters = []
+    
+    if time_span == "today":
+        start_time = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        filters.append(Violation.timestamp >= start_time)
+    elif time_span == "last_7_days":
+        start_time = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+        filters.append(Violation.timestamp >= start_time)
+    elif time_span == "last_month":
+        start_time = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+        filters.append(Violation.timestamp >= start_time)
+        
+    if camera_id and camera_id != "all":
+        filters.append(Violation.camera_id == camera_id)
+        
+    if violation_type and violation_type != "all":
+        filters.append(Violation.type == violation_type)
+
+    violation_filter = and_(*filters) if filters else True
+
     # 1. Violation Categories (detailed counts and sum of fines)
     categories_query = db.query(
         Violation.type,
         func.count(Violation.id).label("count"),
         func.sum(Violation.fine_amount).label("total_fines")
-    ).group_by(Violation.type).all()
+    ).filter(violation_filter).group_by(Violation.type).all()
     
     categories = []
     for item in categories_query:
@@ -35,7 +60,7 @@ def get_analytics_charts(
     vehicle_types_query = db.query(
         Vehicle.type,
         func.count(Violation.id).label("count")
-    ).join(Violation, Vehicle.id == Violation.vehicle_id).group_by(Vehicle.type).all()
+    ).join(Violation, Vehicle.id == Violation.vehicle_id).filter(violation_filter).group_by(Vehicle.type).all()
     
     vehicle_types = []
     for item in vehicle_types_query:
@@ -45,10 +70,9 @@ def get_analytics_charts(
         })
         
     # 3. Peak traffic/violation hours (0-23 hours distribution)
-    # Using SQL extract or custom extraction for SQLite compatible queries
     hourly_query = db.query(
         Violation.timestamp
-    ).all()
+    ).filter(violation_filter).all()
     
     hourly_counts = [0] * 24
     for item in hourly_query:
@@ -64,18 +88,19 @@ def get_analytics_charts(
     monthly_data = []
     current_date = datetime.datetime.utcnow()
     for i in range(5, -1, -1):
-        # Subtract months
         target_date = current_date - datetime.timedelta(days=i*30)
         start_date = target_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         next_month = start_date + datetime.timedelta(days=32)
         end_date = next_month.replace(day=1)
         
         count = db.query(func.count(Violation.id)).filter(
-            and_(Violation.timestamp >= start_date, Violation.timestamp < end_date)
+            and_(Violation.timestamp >= start_date, Violation.timestamp < end_date),
+            violation_filter
         ).scalar() or 0
         
         fines = db.query(func.sum(Violation.fine_amount)).filter(
-            and_(Violation.timestamp >= start_date, Violation.timestamp < end_date)
+            and_(Violation.timestamp >= start_date, Violation.timestamp < end_date),
+            violation_filter
         ).scalar() or 0.0
         
         monthly_data.append({
@@ -85,8 +110,7 @@ def get_analytics_charts(
         })
         
     # 5. Detection Accuracy (confidence score buckets)
-    # Get mean confidence score
-    mean_conf = db.query(func.avg(Violation.confidence_score)).scalar() or 0.92
+    mean_conf = db.query(func.avg(Violation.confidence_score)).filter(violation_filter).scalar() or 0.92
     
     return {
         "categories": categories,

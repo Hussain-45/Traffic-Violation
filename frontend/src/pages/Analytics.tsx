@@ -159,10 +159,22 @@ export default function Analytics() {
   const [loading, setLoading] = useState<boolean>(true);
   const [exporting, setExporting] = useState<boolean>(false);
 
+  // Interactive Analytics Filter States
+  const [timeSpan, setTimeSpan] = useState("all");
+  const [cameraId, setCameraId] = useState("all");
+  const [officerId, setOfficerId] = useState("all");
+  const [violationType, setViolationType] = useState("all");
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/analytics/charts`, {
+        const queryParams = new URLSearchParams();
+        if (timeSpan !== "all") queryParams.append("time_span", timeSpan);
+        if (cameraId !== "all") queryParams.append("camera_id", cameraId);
+        if (officerId !== "all") queryParams.append("officer_id", officerId);
+        if (violationType !== "all") queryParams.append("violation_type", violationType);
+
+        const res = await fetch(`${API_BASE_URL}/analytics/charts?${queryParams.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -173,13 +185,20 @@ export default function Analytics() {
         }
       } catch (err) {
         console.warn("Using offline fallback mock charts data.");
-        setData(fallbackAnalytics);
+        // Simulated local filtering for standalone offline demo interactivity
+        let filtered = { ...fallbackAnalytics };
+        if (violationType !== "all") {
+          filtered.categories = fallbackAnalytics.categories.filter(c => 
+            c.type.toLowerCase().includes(violationType.replace("_", " ").toLowerCase())
+          );
+        }
+        setData(filtered);
       } finally {
         setLoading(false);
       }
     };
     fetchAnalytics();
-  }, [token]);
+  }, [token, timeSpan, cameraId, officerId, violationType]);
 
   const handleExportSubmit = async (format: "csv" | "xlsx") => {
     setExporting(true);
@@ -291,6 +310,74 @@ export default function Analytics() {
           </Button>
         </div>
       </div>
+
+      {/* Interactive Filters Panel */}
+      <Card className="glass-panel border-white/10 shadow-sm p-4 grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden">
+        
+        {/* Timespan Selector */}
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Temporal Scope</label>
+          <select
+            value={timeSpan}
+            onChange={(e) => setTimeSpan(e.target.value)}
+            className="w-full h-8 rounded-xl bg-slate-900 border border-white/10 px-2.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer"
+          >
+            <option value="all">All Available Records</option>
+            <option value="today">Today (Last 24 Hours)</option>
+            <option value="last_7_days">Last 7 Days (Weekly Audit)</option>
+            <option value="last_month">Last Month (Monthly Range)</option>
+          </select>
+        </div>
+
+        {/* Camera Selector */}
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">CCTV Node Checkpoint</label>
+          <select
+            value={cameraId}
+            onChange={(e) => setCameraId(e.target.value)}
+            className="w-full h-8 rounded-xl bg-slate-900 border border-white/10 px-2.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer"
+          >
+            <option value="all">All Camera Checkpoints</option>
+            <option value="CAM-001">CAM-001 (Connaught Place)</option>
+            <option value="CAM-002">CAM-002 (India Gate)</option>
+            <option value="CAM-003">CAM-003 (Rajouri Garden)</option>
+            <option value="CAM-005">CAM-005 (Karol Bagh)</option>
+          </select>
+        </div>
+
+        {/* Officer Selector */}
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Monitoring Officer</label>
+          <select
+            value={officerId}
+            onChange={(e) => setOfficerId(e.target.value)}
+            className="w-full h-8 rounded-xl bg-slate-900 border border-white/10 px-2.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer"
+          >
+            <option value="all">All Registry Officers</option>
+            <option value="1">Officer Rajesh Kumar</option>
+            <option value="2">Officer Vidya</option>
+            <option value="3">Officer Jaspreet</option>
+          </select>
+        </div>
+
+        {/* Violation Type Selector */}
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Infraction Category</label>
+          <select
+            value={violationType}
+            onChange={(e) => setViolationType(e.target.value)}
+            className="w-full h-8 rounded-xl bg-slate-900 border border-white/10 px-2.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer"
+          >
+            <option value="all">All Violation Types</option>
+            <option value="red_light_jump">Signal Violation (Red Light Jump)</option>
+            <option value="wrong_lane">Wrong Lane Driving</option>
+            <option value="overspeeding">Speed Limit Infractions</option>
+            <option value="no_helmet">No Helmet Rider</option>
+            <option value="no_seatbelt">Seatbelt Violation</option>
+          </select>
+        </div>
+
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
