@@ -55,11 +55,17 @@ class ViolationOut(BaseModel):
     class Config:
         from_attributes = True
 
+class ViolationsResponse(BaseModel):
+    total: int
+    items: List[ViolationOut]
+    skip: int
+    limit: int
+
 class StatusUpdate(BaseModel):
     status: str  # pending, paid, resolved
     officer_notes: Optional[str] = None
 
-@router.get("", response_model=dict)
+@router.get("", response_model=ViolationsResponse)
 def get_violations(
     db: Session = Depends(get_db),
     skip: int = 0,

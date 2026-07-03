@@ -453,3 +453,366 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2026-07-04 00:20:34,487 [INFO] STVDS: HTTP GET /api/v1/dashboard/system-health - Status: 404 - Duration: 1.57ms
 2026-07-04 00:20:34,495 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.67ms
 2026-07-04 00:20:34,507 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.43ms
+2026-07-04 00:20:46,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.64ms
+2026-07-04 00:20:46,185 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.41ms
+2026-07-04 00:21:09,848 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 200 - Duration: 6.17ms
+2026-07-04 00:21:09,858 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 200 - Duration: 6.26ms
+2026-07-04 00:21:10,147 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 12.71ms
+2026-07-04 00:21:10,170 [INFO] STVDS: HTTP GET /api/v1/reports - Status: 200 - Duration: 15.32ms
+2026-07-04 00:21:10,200 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 21.96ms
+2026-07-04 00:21:10,229 [INFO] STVDS: HTTP GET /api/v1/reports - Status: 200 - Duration: 20.70ms
+2026-07-04 00:21:10,250 [INFO] STVDS: HTTP GET /api/v1/dashboard/stats - Status: 200 - Duration: 99.48ms
+2026-07-04 00:21:10,286 [INFO] STVDS: HTTP GET /api/v1/dashboard/stats - Status: 200 - Duration: 31.97ms
+2026-07-04 00:21:10,481 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.75ms
+2026-07-04 00:21:10,492 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.39ms
+2026-07-04 00:21:22,152 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.27ms
+2026-07-04 00:21:22,164 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.41ms
+2026-07-04 00:21:34,151 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.19ms
+2026-07-04 00:21:34,164 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.92ms
+2026-07-04 00:21:46,152 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.86ms
+2026-07-04 00:21:46,169 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 8.82ms
+2026-07-04 00:21:58,170 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.93ms
+2026-07-04 00:21:58,181 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.65ms
+2026-07-04 00:22:10,481 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 3.32ms
+2026-07-04 00:22:10,495 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.55ms
+2026-07-04 00:22:22,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.53ms
+2026-07-04 00:22:22,184 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.87ms
+2026-07-04 00:22:34,485 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.97ms
+2026-07-04 00:22:34,497 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.69ms
+2026-07-04 00:22:46,179 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 1.76ms
+2026-07-04 00:22:46,198 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.33ms
+2026-07-04 00:23:34,478 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 1.04ms
+2026-07-04 00:23:34,494 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.31ms
+2026-07-04 00:23:59,105 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 13.59ms
+2026-07-04 00:23:59,118 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.87ms
+2026-07-04 00:24:10,482 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.22ms
+2026-07-04 00:24:10,496 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.58ms
+2026-07-04 00:24:22,166 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 4.62ms
+2026-07-04 00:24:22,184 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.78ms
+2026-07-04 00:24:34,471 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 0.00ms
+2026-07-04 00:24:34,492 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.17ms
+2026-07-04 00:24:46,169 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.93ms
+2026-07-04 00:24:46,183 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.69ms
+2026-07-04 00:24:58,492 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.99ms
+2026-07-04 00:24:58,508 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.59ms
+2026-07-04 00:25:10,175 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.49ms
+2026-07-04 00:25:10,187 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.40ms
+2026-07-04 00:25:22,480 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 9.30ms
+2026-07-04 00:25:22,496 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.68ms
+2026-07-04 00:25:34,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 0.00ms
+2026-07-04 00:25:34,195 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.94ms
+2026-07-04 00:25:46,477 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 0.00ms
+2026-07-04 00:25:46,497 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.97ms
+2026-07-04 00:26:32,126 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 14.82ms
+2026-07-04 00:26:32,139 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.18ms
+2026-07-04 00:26:34,182 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 8.14ms
+2026-07-04 00:26:34,195 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.93ms
+2026-07-04 00:26:46,486 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.17ms
+2026-07-04 00:26:46,498 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.79ms
+2026-07-04 00:26:58,164 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 1.79ms
+2026-07-04 00:26:58,180 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.20ms
+2026-07-04 00:27:10,479 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.22ms
+2026-07-04 00:27:10,491 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.29ms
+2026-07-04 00:27:22,182 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.05ms
+2026-07-04 00:27:22,193 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.74ms
+2026-07-04 00:27:34,484 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.07ms
+2026-07-04 00:27:34,495 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.75ms
+2026-07-04 00:28:34,168 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 4.49ms
+2026-07-04 00:28:34,183 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.91ms
+2026-07-04 00:29:34,477 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.00ms
+2026-07-04 00:29:34,491 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.03ms
+2026-07-04 00:30:34,169 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.77ms
+2026-07-04 00:30:34,185 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.96ms
+2026-07-04 00:30:54,074 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.07ms
+2026-07-04 00:30:54,089 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.99ms
+2026-07-04 00:30:58,174 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.06ms
+2026-07-04 00:30:58,192 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 9.88ms
+2026-07-04 00:31:10,171 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.27ms
+2026-07-04 00:31:10,183 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.41ms
+2026-07-04 00:31:22,483 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.45ms
+2026-07-04 00:31:22,493 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.30ms
+2026-07-04 00:31:34,174 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 10.54ms
+2026-07-04 00:31:34,187 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.19ms
+2026-07-04 00:31:46,489 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.11ms
+2026-07-04 00:31:46,501 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.60ms
+2026-07-04 00:32:13,569 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 10.52ms
+2026-07-04 00:32:13,593 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 10.56ms
+2026-07-04 00:32:22,471 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.87ms
+2026-07-04 00:32:22,482 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.21ms
+2026-07-04 00:32:34,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.53ms
+2026-07-04 00:32:34,186 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.41ms
+2026-07-04 00:32:46,485 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 4.64ms
+2026-07-04 00:32:46,498 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.03ms
+2026-07-04 00:32:58,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.29ms
+2026-07-04 00:32:58,185 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.43ms
+2026-07-04 00:33:10,483 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.45ms
+2026-07-04 00:33:10,493 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.39ms
+2026-07-04 00:33:34,185 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.86ms
+2026-07-04 00:33:34,198 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.38ms
+2026-07-04 00:34:34,505 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.94ms
+2026-07-04 00:34:34,525 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.49ms
+2026-07-04 00:35:34,170 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 3.25ms
+2026-07-04 00:35:34,186 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.05ms
+2026-07-04 00:36:34,491 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.26ms
+2026-07-04 00:36:34,504 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.26ms
+2026-07-04 00:37:34,173 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.73ms
+2026-07-04 00:37:34,185 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.06ms
+2026-07-04 00:38:34,478 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.57ms
+2026-07-04 00:38:34,491 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.38ms
+2026-07-04 00:39:34,190 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.33ms
+2026-07-04 00:39:34,202 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.86ms
+2026-07-04 00:40:34,500 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 7.60ms
+2026-07-04 00:40:34,513 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 8.25ms
+2026-07-04 00:41:34,186 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.14ms
+2026-07-04 00:41:34,198 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 4.88ms
+2026-07-04 00:42:34,477 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.23ms
+2026-07-04 00:42:34,489 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.02ms
+2026-07-04 00:43:28,016 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 200 - Duration: 375.89ms
+2026-07-04 00:43:30,063 [INFO] STVDS: HTTP GET /api/v1/cameras - Status: 200 - Duration: 7.27ms
+2026-07-04 00:43:32,124 [ERROR] STVDS: HTTP GET /api/v1/violations failed - Duration: 10.89ms - Error: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+2026-07-04 00:43:32,126 [ERROR] STVDS: Unhandled Exception on GET /api/v1/violations: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 190, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 83, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 189, in __call__
+    |     with collapse_excgroups():
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 57, in log_requests_middleware
+    |     raise e
+    |   File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 50, in log_requests_middleware
+    |     response = await call_next(request)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 758, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 778, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 299, in handle
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 79, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 74, in app
+    |     response = await func(request)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 296, in app
+    |     content = await serialize_response(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 160, in serialize_response
+    |     return field.serialize(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\_compat.py", line 147, in serialize
+    |     return self._type_adapter.dump_python(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\pydantic\type_adapter.py", line 333, in dump_python
+    |     return self.serializer.to_python(
+    | pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 83, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 57, in log_requests_middleware
+    raise e
+  File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 50, in log_requests_middleware
+    response = await call_next(request)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    raise app_exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 74, in app
+    response = await func(request)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 296, in app
+    content = await serialize_response(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 160, in serialize_response
+    return field.serialize(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\_compat.py", line 147, in serialize
+    return self._type_adapter.dump_python(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\pydantic\type_adapter.py", line 333, in dump_python
+    return self.serializer.to_python(
+pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+2026-07-04 00:43:34,183 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.37ms
+2026-07-04 00:43:34,195 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.47ms
+2026-07-04 00:43:34,275 [INFO] STVDS: HTTP GET /api/v1/fines/rules - Status: 200 - Duration: 6.98ms
+2026-07-04 00:43:36,320 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.65ms
+2026-07-04 00:44:34,491 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 6.78ms
+2026-07-04 00:44:34,505 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 7.45ms
+2026-07-04 00:45:24,390 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 200 - Duration: 380.76ms
+2026-07-04 00:45:26,428 [INFO] STVDS: HTTP GET /api/v1/cameras - Status: 200 - Duration: 8.40ms
+2026-07-04 00:45:28,490 [ERROR] STVDS: HTTP GET /api/v1/violations failed - Duration: 9.64ms - Error: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+2026-07-04 00:45:28,491 [ERROR] STVDS: Unhandled Exception on GET /api/v1/violations: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 190, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 83, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 189, in __call__
+    |     with collapse_excgroups():
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 57, in log_requests_middleware
+    |     raise e
+    |   File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 50, in log_requests_middleware
+    |     response = await call_next(request)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 758, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 778, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 299, in handle
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 79, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 74, in app
+    |     response = await func(request)
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 296, in app
+    |     content = await serialize_response(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 160, in serialize_response
+    |     return field.serialize(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\_compat.py", line 147, in serialize
+    |     return self._type_adapter.dump_python(
+    |   File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\pydantic\type_adapter.py", line 333, in dump_python
+    |     return self.serializer.to_python(
+    | pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\cors.py", line 83, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 57, in log_requests_middleware
+    raise e
+  File "C:\Users\Jaspreet\OneDrive\Desktop\Traffic Violation\backend\app\main.py", line 50, in log_requests_middleware
+    response = await call_next(request)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    raise app_exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\starlette\routing.py", line 74, in app
+    response = await func(request)
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 296, in app
+    content = await serialize_response(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\routing.py", line 160, in serialize_response
+    return field.serialize(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\fastapi\_compat.py", line 147, in serialize
+    return self._type_adapter.dump_python(
+  File "C:\Users\Jaspreet\AppData\Local\Programs\Python\Python310\lib\site-packages\pydantic\type_adapter.py", line 333, in dump_python
+    return self.serializer.to_python(
+pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'backend.app.models.Violation'>
+2026-07-04 00:45:30,541 [INFO] STVDS: HTTP GET /api/v1/fines/rules - Status: 200 - Duration: 6.02ms
+2026-07-04 00:45:32,579 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 6.86ms
+2026-07-04 00:45:34,171 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 200 - Duration: 5.00ms
+2026-07-04 00:45:34,183 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.54ms
+2026-07-04 00:47:55,211 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 200 - Duration: 390.86ms
+2026-07-04 00:47:57,241 [INFO] STVDS: HTTP GET /api/v1/cameras - Status: 200 - Duration: 9.07ms
+2026-07-04 00:47:59,326 [INFO] STVDS: HTTP GET /api/v1/violations - Status: 200 - Duration: 29.40ms
+2026-07-04 00:48:01,386 [INFO] STVDS: HTTP GET /api/v1/fines/rules - Status: 200 - Duration: 10.20ms
+2026-07-04 00:48:03,438 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 8.21ms

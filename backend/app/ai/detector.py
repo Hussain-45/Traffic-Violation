@@ -16,9 +16,13 @@ if settings.AI_MODE == "active":
         from ultralytics import YOLO
         import easyocr
         
-        # Load lightweight YOLOv8 nano model
-        # This will download the file 'yolov8n.pt' if not present locally
-        yolo_model = YOLO("yolov8n.pt")
+        # Load YOLOv8 weights (prefer custom trained weights if available)
+        custom_weights = "runs/detect/traffic_violation_model/weights/best.pt"
+        if os.path.exists(custom_weights):
+            yolo_model = YOLO(custom_weights)
+            print(f"[AI Engine] Loaded custom trained weights: {custom_weights}")
+        else:
+            yolo_model = YOLO("yolov8n.pt")
         
         # Initialize EasyOCR reader for English language
         ocr_reader = easyocr.Reader(['en'], gpu=False)
