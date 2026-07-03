@@ -34,6 +34,7 @@ interface StagedFile {
   status: "idle" | "uploading" | "success" | "error"
   errorMsg?: string
   result?: any
+  detectedTime?: string
 }
 
 // Fallback AI results for stand-alone frontend mode
@@ -196,7 +197,7 @@ export default function Upload() {
         setStagedFiles((prev) =>
           prev.map((f) =>
             f.id === staged.id
-              ? { ...f, status: "success", progress: 100, result: data.ai_results }
+              ? { ...f, status: "success", progress: 100, result: data.ai_results, detectedTime: new Date().toLocaleTimeString() }
               : f
           )
         );
@@ -219,7 +220,7 @@ export default function Upload() {
         setStagedFiles((prev) =>
           prev.map((f) =>
             f.id === staged.id
-              ? { ...f, status: "success", progress: 100, result: mockAIResult }
+              ? { ...f, status: "success", progress: 100, result: mockAIResult, detectedTime: new Date().toLocaleTimeString() }
               : f
           )
         );
@@ -461,7 +462,12 @@ export default function Upload() {
                 stagedFiles.filter(f => f.status === 'success').map((staged) => (
                   <div key={staged.id} className="p-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-850/40 space-y-3 text-xs">
                     <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/30 pb-2">
-                      <span className="font-bold truncate max-w-[130px]">{staged.file.name}</span>
+                      <div className="min-w-0">
+                        <span className="font-bold truncate max-w-[130px] block">{staged.file.name}</span>
+                        {staged.detectedTime && (
+                          <span className="text-[8px] text-slate-450 font-semibold block">Scan Time: {staged.detectedTime}</span>
+                        )}
+                      </div>
                       <Badge variant="success" className="text-[7px]">Processed</Badge>
                     </div>
 
@@ -477,11 +483,29 @@ export default function Upload() {
                           <div className="h-7 w-20 bg-yellow-400 rounded flex items-center justify-center font-extrabold text-[9px] text-black border border-black/20">
                             {v.plate}
                           </div>
-                          <div className="text-right text-[8px] text-slate-400 font-bold">
+                          <div className="text-right text-[8px] text-slate-450 font-bold">
                             <span className="block text-blue-500 uppercase">OCR Confidence</span>
                             <span>{Math.round(v.plate_confidence * 100)}%</span>
                           </div>
                         </div>
+
+                        {/* Plate Image Crop Preview */}
+                        {v.plate_crop_path && (
+                          <div className="space-y-1">
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">License Plate Crop</span>
+                            <div className="h-10 rounded bg-slate-200 dark:bg-slate-950 border border-slate-300/10 flex items-center justify-center overflow-hidden p-1">
+                              <img 
+                                src={`${API_BASE_URL}/${v.plate_crop_path.replace(/\\/g, '/')}`} 
+                                alt="Plate Crop" 
+                                className="h-full object-contain"
+                                onError={(e) => {
+                                  // Hide frame if path fails (like mock runs)
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         {/* Violations */}
                         {v.violations.length > 0 ? (
