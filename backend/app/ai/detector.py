@@ -54,7 +54,7 @@ VIOLATION_LABELS = {
     "triple_riding": "Triple Riding (Motorcycle)",
     "mobile_usage": "Using Mobile While Driving",
     "illegal_parking": "Illegal Parking",
-    "against_traffic": "Driving Against Traffic",
+    "against_traffic": "Wrong Direction",
     "stop_line_crossing": "Stop Line Crossing"
 }
 
@@ -323,16 +323,92 @@ def run_real_detection(img_path, filename):
             cv2.imwrite(plate_crop_path, dummy_plate)
 
         # Speed simulation / detection logic
-        speed = round(random.uniform(40.0, 85.0), 1)
+        speed = round(random.uniform(30.0, 85.0), 1)
         is_speeding = speed > settings.SPEED_LIMIT_KMH
         
         vehicle_violations = []
+        
+        # 1. Overspeeding
         if is_speeding:
             vehicle_violations.append({
                 "type": "overspeeding",
                 "label": "Overspeeding",
                 "fine_amount": 1000.0,
-                "confidence": 0.95
+                "confidence": round(random.uniform(0.85, 0.98), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+            
+        # 2. No Helmet (Motorcycle, 15% probability)
+        if v_type == "motorcycle" and random.random() < 0.15:
+            vehicle_violations.append({
+                "type": "no_helmet",
+                "label": "No Helmet Riding",
+                "fine_amount": 500.0,
+                "confidence": round(random.uniform(0.80, 0.96), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+
+        # 3. Triple Riding (Motorcycle, 8% probability)
+        if v_type == "motorcycle" and random.random() < 0.08:
+            vehicle_violations.append({
+                "type": "triple_riding",
+                "label": "Triple Riding (Motorcycle)",
+                "fine_amount": 1000.0,
+                "confidence": round(random.uniform(0.82, 0.95), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+            
+        # 4. No Seatbelt (Car, 15% probability)
+        if v_type == "car" and random.random() < 0.15:
+            vehicle_violations.append({
+                "type": "no_seatbelt",
+                "label": "No Seatbelt Driving",
+                "fine_amount": 500.0,
+                "confidence": round(random.uniform(0.78, 0.94), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+
+        # 5. Wrong Lane (Any class, 5% probability)
+        if random.random() < 0.05:
+            vehicle_violations.append({
+                "type": "wrong_lane",
+                "label": "Wrong Lane Driving",
+                "fine_amount": 1000.0,
+                "confidence": round(random.uniform(0.85, 0.98), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+
+        # 6. Wrong Direction (Any class, 4% probability)
+        if random.random() < 0.04:
+            vehicle_violations.append({
+                "type": "against_traffic",
+                "label": "Wrong Direction",
+                "fine_amount": 2000.0,
+                "confidence": round(random.uniform(0.88, 0.99), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+
+        # 7. Red Light Jump / Stop Line Crossing (6% probability if active)
+        if random.random() < 0.06:
+            v_choice = random.choice(["red_light_jump", "stop_line_crossing"])
+            fine_val = 2000.0 if v_choice == "red_light_jump" else 500.0
+            label_val = "Signal Violation (Red Light Jump)" if v_choice == "red_light_jump" else "Stop Line Crossing"
+            vehicle_violations.append({
+                "type": v_choice,
+                "label": label_val,
+                "fine_amount": fine_val,
+                "confidence": round(random.uniform(0.84, 0.98), 2)
+            })
+            violations_detected.append(vehicle_violations[-1])
+
+        # 8. Illegal Parking (4% probability, sets speed to 0)
+        if random.random() < 0.04:
+            speed = 0.0
+            vehicle_violations.append({
+                "type": "illegal_parking",
+                "label": "Illegal Parking",
+                "fine_amount": 500.0,
+                "confidence": round(random.uniform(0.90, 0.99), 2)
             })
             violations_detected.append(vehicle_violations[-1])
             
