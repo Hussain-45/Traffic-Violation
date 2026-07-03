@@ -1,18 +1,25 @@
 import React, { useState, useEffect, useContext } from "react";
-import { AuthContext, API_BASE_URL } from "../App";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import { AuthContext, ThemeContext, API_BASE_URL } from "../App";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Select } from "../components/ui/select";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../components/ui/table";
-import { Settings, Cpu, IndianRupee, Save, ShieldCheck } from "lucide-react";
-
-interface FineRule {
-  violation_type: string
-  amount: number
-  description: string
-}
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import {
+  User,
+  ShieldCheck,
+  Eye,
+  Globe,
+  Sun,
+  Moon,
+  Cpu,
+  Camera,
+  Settings as SettingsIcon,
+  Save,
+  Lock,
+  CameraOff
+} from "lucide-react";
 
 interface AIThresholds {
   ai_mode: string
@@ -20,268 +27,372 @@ interface AIThresholds {
   speed_limit: number
 }
 
-// Fallback mock fine rules
-const fallbackFines: FineRule[] = [
-  { violation_type: "red_light_jump", amount: 2000, description: "Jumping red traffic signal lights" },
-  { violation_type: "wrong_lane", amount: 1000, description: "Driving in dedicated bus/wrong lanes" },
-  { violation_type: "overspeeding", amount: 1000, description: "Exceeding speed limits" },
-  { violation_type: "no_helmet", amount: 500, description: "Riding two-wheeler without helmet" },
-  { violation_type: "no_seatbelt", amount: 500, description: "Driving car without seatbelt" }
-];
+interface CameraSetting {
+  id: string
+  name: string
+  resolution: "1080p" | "720p" | "480p"
+  fps_limit: number
+}
 
 export default function SystemSettings() {
-  const { token, user } = useContext(AuthContext);
+  const { token, user, login } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
-  const [fines, setFines] = useState<FineRule[]>([]);
-  const [thresholds, setThresholds] = useState<AIThresholds | null>(null);
+  // Form states: Profile
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [profileMsg, setProfileMsg] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
 
-  const [loadingFines, setLoadingFines] = useState<boolean>(true);
-  const [loadingThresholds, setLoadingThresholds] = useState<boolean>(true);
+  // Form states: Password
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
 
-  // Form states
-  const [aiMode, setAiMode] = useState("active");
+  // Form states: Language & Theme
+  const [language, setLanguage] = useState(localStorage.getItem("language") || "en");
+
+  // Form states: AI Tuning
+  const [aiMode, setAiMode] = useState("simulated");
   const [confThreshold, setConfThreshold] = useState(0.45);
-  const [speedLimit, setSpeedLimit] = useState(60.0);
+  const [speedLimit, setSpeedLimit] = useState(60);
+  const [aiMsg, setAiMsg] = useState("");
+  const [savingAI, setSavingAI] = useState(false);
 
-  const [updatingThresholds, setUpdatingThresholds] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [editingFineType, setEditingFineType] = useState<string | null>(null);
-  const [editFineVal, setEditFineVal] = useState("");
+  // Camera stream settings (Stored locally for demo)
+  const [cameras, setCameras] = useState<CameraSetting[]>([
+    { id: "CAM-001", name: "Connaught Place Jn 1", resolution: "1080p", fps_limit: 30 },
+    { id: "CAM-002", name: "India Gate Circular 3", resolution: "1080p", fps_limit: 30 },
+    { id: "CAM-003", name: "Rajouri Garden Flyover", resolution: "720p", fps_limit: 25 },
+    { id: "CAM-004", name: "AIIMS Crossing Main Feed", resolution: "720p", fps_limit: 15 },
+    { id: "CAM-005", name: "Karol Bagh Bazar CCTV 3", resolution: "480p", fps_limit: 15 }
+  ]);
 
-  const fetchFines = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/settings/fines`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFines(data);
-      } else {
-        throw new Error("API Offline");
-      }
-    } catch (err) {
-      console.warn("Using offline fine rule directory.");
-      setFines(fallbackFines);
-    } finally {
-      setLoadingFines(false);
+  const syncProfileState = () => {
+    if (user) {
+      setFullName(user.full_name);
+      setEmail(user.email || "");
     }
   };
 
   const fetchThresholds = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/settings/thresholds`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
-        setThresholds(data);
         setAiMode(data.ai_mode);
         setConfThreshold(data.confidence_threshold);
         setSpeedLimit(data.speed_limit);
-      } else {
-        throw new Error("API Offline");
       }
     } catch (err) {
-      console.warn("Using offline AI thresholds parameters.");
-      setThresholds({ ai_mode: "simulated", confidence_threshold: 0.45, speed_limit: 60 });
-    } finally {
-      setLoadingThresholds(false);
+      console.warn("Using offline AI thresholds configuration.");
     }
   };
 
   useEffect(() => {
-    fetchFines();
+    syncProfileState();
     fetchThresholds();
-  }, [token]);
+  }, [token, user]);
 
-  const handleThresholdSave = async (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (user?.role !== "admin") return;
+    setSavingProfile(true);
+    setProfileMsg("");
 
-    setUpdatingThresholds(true);
-    setSuccessMsg("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/me/profile`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ full_name: fullName, email })
+      });
+
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setProfileMsg("Profile updated successfully!");
+        if (user) {
+          login(token!, { ...user, full_name: updatedUser.full_name, email: updatedUser.email });
+        }
+      } else {
+        const err = await res.json();
+        setProfileMsg(err.detail || "Profile update failed.");
+      }
+    } catch (err) {
+      setProfileMsg("Profile updated (Simulation mode).");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handlePasswordSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingPassword(true);
+    setPasswordMsg("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/me/password`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+      });
+
+      if (res.ok) {
+        setPasswordMsg("Password updated successfully!");
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        const err = await res.json();
+        setPasswordMsg(err.detail || "Password change rejected.");
+      }
+    } catch (err) {
+      setPasswordMsg("Password update failed (Authentication error).");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  const handleLanguageSave = (val: string) => {
+    setLanguage(val);
+    localStorage.setItem("language", val);
+    alert(`Language preference set to: ${val.toUpperCase()}`);
+  };
+
+  const handleAISave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAI(true);
+    setAiMsg("");
+
     try {
       const res = await fetch(`${API_BASE_URL}/settings/thresholds`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           ai_mode: aiMode,
           confidence_threshold: parseFloat(confThreshold as any),
-          speed_limit: parseFloat(speedLimit as any),
-        }),
+          speed_limit: parseFloat(speedLimit as any)
+        })
       });
 
       if (res.ok) {
-        setSuccessMsg("AI parameters updated successfully!");
-        fetchThresholds();
+        setAiMsg("AI tuning parameters updated successfully!");
       }
     } catch (err) {
-      console.warn("API Offline. Updating parameters locally.");
-      setSuccessMsg("AI parameters saved (Simulation Mode).");
+      setAiMsg("AI parameters updated (Simulation Mode).");
     } finally {
-      setUpdatingThresholds(false);
+      setSavingAI(false);
     }
   };
 
-  const handleFineEditClick = (rule: FineRule) => {
-    if (user?.role !== "admin") return;
-    setEditingFineType(rule.violation_type);
-    setEditFineVal(rule.amount.toString());
+  const handleCameraResolutionChange = (id: string, resolution: "1080p" | "720p" | "480p") => {
+    setCameras((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, resolution } : c))
+    );
   };
 
-  const handleFineSaveSubmit = async (violationType: string) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/settings/fines/${violationType}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ amount: parseFloat(editFineVal) }),
-      });
-      if (res.ok) {
-        setEditingFineType(null);
-        fetchFines();
-      }
-    } catch (err) {
-      console.warn("API Offline. Modifying fine tariff locally.");
-      setFines((prev) =>
-        prev.map((f) =>
-          f.violation_type === violationType ? { ...f, amount: parseFloat(editFineVal) } : f
-        )
-      );
-      setEditingFineType(null);
-    }
+  const handleCameraFpsChange = (id: string, fps_limit: number) => {
+    setCameras((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, fps_limit } : c))
+    );
   };
 
   return (
     <div className="space-y-6">
+      
       {/* Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">System Settings</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Modify active AI detection mode, confidence sliders, and fine tariff directories.
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+          Configure appearances, language preferences, profile details, and AI thresholds.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        
-        {/* Fine Rules Tariff (Left spanned) */}
-        <div className="xl:col-span-2">
-          <Card className="glass-card p-6 space-y-4">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <IndianRupee size={16} className="text-blue-500" />
-              Challan Tariff Registry
-            </CardTitle>
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="profile" className="text-xs font-bold py-2">Profile & Credentials</TabsTrigger>
+          <TabsTrigger value="appearance" className="text-xs font-bold py-2">Appearance & Locale</TabsTrigger>
+          <TabsTrigger value="ai" className="text-xs font-bold py-2">AI Model Tuning</TabsTrigger>
+          <TabsTrigger value="cameras" className="text-xs font-bold py-2">Camera Configurations</TabsTrigger>
+        </TabsList>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Offence Code</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Fine Tariff</TableHead>
-                  {user?.role === "admin" && <th className="pb-3 text-center">Action</th>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingFines ? (
-                  [1, 2].map((i) => (
-                    <TableRow key={i} className="animate-pulse">
-                      <TableCell><div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800"></div></TableCell>
-                      <TableCell><div className="h-4 w-48 rounded bg-slate-200 dark:bg-slate-800"></div></TableCell>
-                      <TableCell><div className="h-4 w-12 rounded bg-slate-200 dark:bg-slate-800"></div></TableCell>
-                      <TableCell><div className="h-7 w-12 rounded bg-slate-200 dark:bg-slate-800 mx-auto"></div></TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  fines.map((rule) => (
-                    <TableRow key={rule.violation_type}>
-                      <TableCell className="font-bold text-slate-700 dark:text-slate-200 uppercase">
-                        {rule.violation_type.replace("_", " ")}
-                      </TableCell>
-                      <TableCell className="text-slate-500 font-semibold">{rule.description}</TableCell>
-                      <TableCell className="font-extrabold text-slate-850 dark:text-slate-100">
-                        {editingFineType === rule.violation_type ? (
-                          <Input
-                            type="number"
-                            value={editFineVal}
-                            onChange={(e) => setEditFineVal(e.target.value)}
-                            className="w-20 h-8 text-xs p-1 bg-slate-100 dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded text-white"
-                          />
-                        ) : (
-                          `₹${rule.amount}`
-                        )}
-                      </TableCell>
-                      {user?.role === "admin" && (
-                        <TableCell className="text-center">
-                          {editingFineType === rule.violation_type ? (
-                            <Button
-                              onClick={() => handleFineSaveSubmit(rule.violation_type)}
-                              size="sm"
-                              className="h-8 text-[10px] px-2.5 bg-emerald-500 hover:bg-emerald-600 shadow-sm"
-                            >
-                              Save
-                            </Button>
-                          ) : (
-                            <Button
-                              onClick={() => handleFineEditClick(rule)}
-                              variant="outline"
-                              size="sm"
-                              className="h-8 text-[10px] px-2.5 text-blue-500 hover:bg-blue-600 hover:text-white"
-                            >
-                              Edit
-                            </Button>
-                          )}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </div>
+        {/* Tab 1: Profile & Credentials */}
+        <TabsContent value="profile" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Edit Profile */}
+            <Card className="glass-card p-5 space-y-4">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <User size={15} className="text-blue-500" />
+                  Officer Profile Details
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                  Update your contact email and identity display names.
+                </CardDescription>
+              </CardHeader>
 
-        {/* AI Thresholds (Right Column) */}
-        <div>
-          <Card className="glass-card p-6 space-y-4 shadow-sm">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <Cpu size={16} className="text-blue-500" />
-              AI Model Tuning desk
-            </CardTitle>
+              {profileMsg && (
+                <div className="p-3 text-[10px] rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 font-bold">
+                  {profileMsg}
+                </div>
+              )}
 
-            {successMsg && (
-              <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-[10px] text-emerald-500 font-bold">
-                <ShieldCheck size={14} />
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {loadingThresholds ? (
-              <div className="h-40 rounded bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
-            ) : (
-              <form onSubmit={handleThresholdSave} className="space-y-4 text-xs font-semibold">
-                
+              <form onSubmit={handleProfileSave} className="space-y-4 text-xs font-semibold">
                 <div className="space-y-1">
-                  <label className="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">
-                    AI Execution Mode
-                  </label>
-                  <Select
-                    disabled={user?.role !== "admin"}
-                    value={aiMode}
-                    onChange={(e) => setAiMode(e.target.value)}
-                  >
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Full Identity Name</label>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-9 text-xs" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Email Address</label>
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-9 text-xs" />
+                </div>
+
+                <Button type="submit" disabled={savingProfile} className="w-full h-9 text-[10px] font-bold">
+                  {savingProfile ? "Saving Profile..." : "Save Profile"}
+                </Button>
+              </form>
+            </Card>
+
+            {/* Change Password */}
+            <Card className="glass-card p-5 space-y-4">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Lock size={15} className="text-red-500" />
+                  Credential Credentials Password
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                  Securely update your account access codes.
+                </CardDescription>
+              </CardHeader>
+
+              {passwordMsg && (
+                <div className="p-3 text-[10px] rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 font-bold">
+                  {passwordMsg}
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordSave} className="space-y-4 text-xs font-semibold">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Current Password</label>
+                  <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required className="h-9 text-xs" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-455 uppercase">New Password</label>
+                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="h-9 text-xs" />
+                </div>
+
+                <Button type="submit" disabled={savingPassword} className="w-full h-9 text-[10px] font-bold">
+                  {savingPassword ? "Updating Password..." : "Change Password"}
+                </Button>
+              </form>
+            </Card>
+
+          </div>
+        </TabsContent>
+
+        {/* Tab 2: Appearance & Locale */}
+        <TabsContent value="appearance" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Theme Toggle */}
+            <Card className="glass-card p-5 space-y-4">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  {theme === "dark" ? <Moon size={15} className="text-amber-500" /> : <Sun size={15} className="text-amber-500" />}
+                  Theme Configuration
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                  Select your preferred desktop visual display theme.
+                </CardDescription>
+              </CardHeader>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => theme !== "light" && toggleTheme()}
+                  variant={theme === "light" ? "default" : "outline"}
+                  className="flex-1 text-[10px] font-bold h-9"
+                >
+                  <Sun size={14} className="mr-1.5" /> Light Mode
+                </Button>
+                <Button
+                  onClick={() => theme !== "dark" && toggleTheme()}
+                  variant={theme === "dark" ? "default" : "outline"}
+                  className="flex-1 text-[10px] font-bold h-9"
+                >
+                  <Moon size={14} className="mr-1.5" /> Dark Mode
+                </Button>
+              </div>
+            </Card>
+
+            {/* Language Preference */}
+            <Card className="glass-card p-5 space-y-4">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Globe size={15} className="text-blue-500" />
+                  Language & Locale
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                  Adjust default dashboard language overlays.
+                </CardDescription>
+              </CardHeader>
+
+              <div className="space-y-3">
+                <Select value={language} onChange={(e) => handleLanguageSave(e.target.value)} className="h-9">
+                  <option value="en">English (Official Interface)</option>
+                  <option value="hi">Hindi (हिन्दी)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                </Select>
+              </div>
+            </Card>
+
+          </div>
+        </TabsContent>
+
+        {/* Tab 3: AI Model Tuning */}
+        <TabsContent value="ai" className="space-y-6">
+          <div className="max-w-xl mx-auto">
+            <Card className="glass-card p-6 space-y-5">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Cpu size={16} className="text-blue-500" />
+                  AI Threshold & Pipeline Tuning
+                </CardTitle>
+                <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                  Manage active YOLOv8 image processing parameters and speed limits.
+                </CardDescription>
+              </CardHeader>
+
+              {aiMsg && (
+                <div className="p-3 text-[10px] rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 font-bold">
+                  {aiMsg}
+                </div>
+              )}
+
+              <form onSubmit={handleAISave} className="space-y-4 text-xs font-semibold">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Execution Mode</label>
+                  <Select value={aiMode} onChange={(e) => setAiMode(e.target.value)} className="h-9">
                     <option value="active">Active Inference Mode (Real YOLOv8/EasyOCR)</option>
                     <option value="simulated">Simulation Mode (High-Fidelity Telemetry Graphics)</option>
                   </Select>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex justify-between font-bold uppercase tracking-wider text-[9px]">
-                    <span className="text-slate-400">Confidence Threshold</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider">
+                    <span className="text-slate-400">AI Confidence Threshold</span>
                     <span className="text-blue-500">{Math.round(confThreshold * 100)}%</span>
                   </div>
                   <input
@@ -289,43 +400,85 @@ export default function SystemSettings() {
                     min="0.10"
                     max="0.95"
                     step="0.05"
-                    disabled={user?.role !== "admin"}
                     value={confThreshold}
                     onChange={(e) => setConfThreshold(parseFloat(e.target.value))}
-                    className="w-full accent-blue-500 bg-slate-200 dark:bg-slate-800 h-1 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-blue-500 bg-slate-200 dark:bg-slate-800 h-1 rounded-lg cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">
-                    System Speed Limit (KM/H)
-                  </label>
-                  <Input
-                    type="number"
-                    disabled={user?.role !== "admin"}
-                    value={speedLimit}
-                    onChange={(e) => setSpeedLimit(parseFloat(e.target.value))}
-                    className="h-10 text-xs text-white"
-                  />
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Junction Speed Limit (KM/H)</label>
+                  <Input type="number" value={speedLimit} onChange={(e) => setSpeedLimit(parseInt(e.target.value))} className="h-9 text-xs" />
                 </div>
 
-                {user?.role === "admin" && (
-                  <Button
-                    type="submit"
-                    disabled={updatingThresholds}
-                    className="w-full py-3 text-xs flex items-center justify-center gap-1.5 shadow-md"
-                  >
-                    <Save size={12} />
-                    Save Parameters
-                  </Button>
-                )}
-
+                <Button type="submit" disabled={savingAI} className="w-full h-9 text-[10px] font-bold">
+                  {savingAI ? "Saving Tuning..." : "Save AI Parameters"}
+                </Button>
               </form>
-            )}
-          </Card>
-        </div>
+            </Card>
+          </div>
+        </TabsContent>
 
-      </div>
+        {/* Tab 4: Camera Configurations */}
+        <TabsContent value="cameras" className="space-y-6">
+          <Card className="glass-card p-5 space-y-4">
+            <CardHeader className="p-0">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Camera size={15} className="text-blue-500" />
+                CCTV Node Resolution & FPS Mapping
+              </CardTitle>
+              <CardDescription className="text-[10px] text-slate-500 mt-0.5">
+                Optimize camera resolutions and stream frame rates to balance bandwidth.
+              </CardDescription>
+            </CardHeader>
+
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
+              <table className="w-full text-xs font-semibold text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-450">
+                  <tr>
+                    <th className="p-3">Camera Node</th>
+                    <th className="p-3">Stream Quality</th>
+                    <th className="p-3">Framerate Limit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-250/20">
+                  {cameras.map((c) => (
+                    <tr key={c.id}>
+                      <td className="p-3">
+                        <strong className="text-slate-800 dark:text-slate-100">{c.name}</strong>
+                        <span className="text-[9px] text-slate-450 block uppercase font-bold">{c.id}</span>
+                      </td>
+                      <td className="p-3">
+                        <Select
+                          value={c.resolution}
+                          onChange={(e) => handleCameraResolutionChange(c.id, e.target.value as any)}
+                          className="h-8 w-28 text-[10px]"
+                        >
+                          <option value="1080p">1080p (Full HD)</option>
+                          <option value="720p">720p (Standard HD)</option>
+                          <option value="480p">480p (Low Bandwidth)</option>
+                        </Select>
+                      </td>
+                      <td className="p-3">
+                        <Select
+                          value={c.fps_limit}
+                          onChange={(e) => handleCameraFpsChange(c.id, parseInt(e.target.value))}
+                          className="h-8 w-28 text-[10px]"
+                        >
+                          <option value={30}>30 FPS</option>
+                          <option value={25}>25 FPS</option>
+                          <option value={15}>15 FPS</option>
+                          <option value={10}>10 FPS</option>
+                        </Select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
