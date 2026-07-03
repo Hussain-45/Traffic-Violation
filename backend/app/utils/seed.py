@@ -2,7 +2,7 @@ import datetime
 import random
 from sqlalchemy.orm import Session
 from backend.app.database import engine, Base, SessionLocal
-from backend.app.models import User, Camera, Vehicle, Violation, FineRule, Payment, ActivityLog
+from backend.app.models import User, Camera, Vehicle, Violation, FineRule, Payment, ActivityLog, Location, Setting
 from backend.app.auth.jwt import get_password_hash
 from backend.app.ai.detector import generate_random_plate, VEHICLE_BRANDS, VEHICLE_COLORS, VIOLATION_LABELS
 
@@ -41,11 +41,39 @@ def seed_db():
         db.add_all(users)
         db.commit()
 
-        # 2. Cameras
+        # 2. Locations
+        locations = [
+            Location(name="Connaught Place", description="Central commercial hub", risk_level="high", lat=28.6304, lng=77.2177),
+            Location(name="India Gate Circle", description="Tourist circular landmark", risk_level="medium", lat=28.6129, lng=77.2295),
+            Location(name="Rajouri Garden", description="West Delhi shopping sector", risk_level="medium", lat=28.6415, lng=77.1245),
+            Location(name="AIIMS Crossing", description="Major ring road interchange", risk_level="high", lat=28.5672, lng=77.2100),
+            Location(name="Karol Bagh", description="East Metro market crossing", risk_level="low", lat=28.6441, lng=77.1895)
+        ]
+        db.add_all(locations)
+        db.commit()
+
+        # 3. Settings
+        settings_items = [
+            Setting(key="ai_mode", value="simulated", description="AI Execution Mode (active, simulated)"),
+            Setting(key="confidence_threshold", value="0.45", description="YOLO/OCR Confidence Threshold limit"),
+            Setting(key="speed_limit", value="60.0", description="City Speed Limit in KM/H")
+        ]
+        db.add_all(settings_items)
+        db.commit()
+
+        # Fetch locations for camera foreign keys mapping
+        cp_loc = db.query(Location).filter(Location.name == "Connaught Place").first()
+        ig_loc = db.query(Location).filter(Location.name == "India Gate Circle").first()
+        rg_loc = db.query(Location).filter(Location.name == "Rajouri Garden").first()
+        ax_loc = db.query(Location).filter(Location.name == "AIIMS Crossing").first()
+        kb_loc = db.query(Location).filter(Location.name == "Karol Bagh").first()
+
+        # 4. Cameras
         cameras = [
             Camera(
                 id="CAM-001",
                 name="Connaught Place Outer Ring",
+                location_id=cp_loc.id if cp_loc else None,
                 location="Connaught Place, New Delhi",
                 ip_address="192.168.10.51",
                 status="online",
@@ -56,6 +84,7 @@ def seed_db():
             Camera(
                 id="CAM-002",
                 name="India Gate Circle",
+                location_id=ig_loc.id if ig_loc else None,
                 location="Rajpath, New Delhi",
                 ip_address="192.168.10.52",
                 status="online",
@@ -66,6 +95,7 @@ def seed_db():
             Camera(
                 id="CAM-003",
                 name="Rajouri Garden Intersection",
+                location_id=rg_loc.id if rg_loc else None,
                 location="Rajouri Garden, New Delhi",
                 ip_address="192.168.10.53",
                 status="online",
@@ -76,6 +106,7 @@ def seed_db():
             Camera(
                 id="CAM-004",
                 name="AIIMS Crossing Main Feed",
+                location_id=ax_loc.id if ax_loc else None,
                 location="Ring Road, AIIMS, New Delhi",
                 ip_address="192.168.10.54",
                 status="offline",
@@ -86,6 +117,7 @@ def seed_db():
             Camera(
                 id="CAM-005",
                 name="Karol Bagh Market CCTV 3",
+                location_id=kb_loc.id if kb_loc else None,
                 location="Karol Bagh, New Delhi",
                 ip_address="192.168.10.55",
                 status="online",
@@ -97,7 +129,7 @@ def seed_db():
         db.add_all(cameras)
         db.commit()
 
-        # 3. Fine Rules
+        # 5. Fine Rules
         fine_rules = [
             FineRule(violation_type="red_light_jump", amount=2000.0, description="Red light signal violation"),
             FineRule(violation_type="wrong_lane", amount=1000.0, description="Driving in designated wrong/bus lane"),
@@ -113,8 +145,7 @@ def seed_db():
         db.add_all(fine_rules)
         db.commit()
 
-        # 4. Vehicles & 5. Violations
-        # Let's seed 70 violations over the last 15 days to fill the dashboard charts beautifully.
+        # 6. Vehicles & 7. Violations
         violations_count = 70
         v_types = list(VIOLATION_LABELS.keys())
         

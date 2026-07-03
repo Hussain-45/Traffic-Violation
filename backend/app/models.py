@@ -16,6 +16,21 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
+
+
+class Location(Base):
+    __tablename__ = "locations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True, nullable=False)
+    description = Column(String, nullable=True)
+    risk_level = Column(String, default="low")  # low, medium, high
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    cameras = relationship("Camera", back_populates="location_rel")
 
 
 class Camera(Base):
@@ -23,7 +38,8 @@ class Camera(Base):
 
     id = Column(String, primary_key=True, index=True)  # e.g., CAM-001
     name = Column(String, nullable=False)
-    location = Column(String, nullable=False)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=True)
+    location = Column(String, nullable=False)  # Text fallback
     ip_address = Column(String, nullable=True)
     status = Column(String, default="online")  # online, offline
     health_status = Column(String, default="good")  # good, warning, critical
@@ -31,6 +47,7 @@ class Camera(Base):
     lng = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+    location_rel = relationship("Location", back_populates="cameras")
     violations = relationship("Violation", back_populates="camera")
 
 
@@ -92,6 +109,30 @@ class Payment(Base):
     status = Column(String, default="completed")  # completed, failed, pending
 
     violation = relationship("Violation", back_populates="payments")
+
+
+class Report(Base):
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    report_type = Column(String, nullable=False)  # violations, revenue, analytics
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    file_path = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="reports")
+
+
+class Setting(Base):
+    __tablename__ = "settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True, nullable=False)
+    value = Column(String, nullable=False)
+    description = Column(String, nullable=True)
 
 
 class ActivityLog(Base):
