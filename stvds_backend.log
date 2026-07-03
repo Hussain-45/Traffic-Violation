@@ -72,3 +72,12 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2026-07-03 23:40:06,280 [INFO] STVDS: HTTP GET /api/v1/violations - Status: 200 - Duration: 8.26ms
 2026-07-03 23:40:08,327 [INFO] STVDS: HTTP GET /api/v1/fines/rules - Status: 200 - Duration: 7.44ms
 2026-07-03 23:40:10,374 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 200 - Duration: 5.01ms
+2026-07-03 23:40:34,168 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 3.24ms
+2026-07-03 23:40:34,179 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 4.75ms
+2026-07-03 23:41:34,481 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 4.23ms
+2026-07-03 23:41:34,493 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 5.42ms
+2026-07-03 23:41:46,650 [INFO] STVDS: HTTP GET /api/v1/notifications/unread-count - Status: 401 - Duration: 6.15ms
+2026-07-03 23:41:46,661 [INFO] STVDS: HTTP GET /api/v1/notifications - Status: 401 - Duration: 4.91ms
+2026-07-03 23:41:49,424 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 401 - Duration: 3.48ms
+2026-07-03 23:41:49,431 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 401 - Duration: 2.79ms
+2026-07-03 23:42:02,706 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 401 - Duration: 7.78ms

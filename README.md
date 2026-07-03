@@ -2,6 +2,16 @@
 
 A next-generation, high-performance intelligent transportation command system powered by **YOLOv8** and **EasyOCR** for automated vehicle target classification, licence plate recognition, traffic infraction tracking, live camera monitoring, interactive map analytics, and automated fine tariff management.
 
+## 📂 Project Documentation
+
+For deeper operational details, view the specific documents in the [docs](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs) directory:
+- 📥 **[Installation Guide](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/INSTALLATION.md)**: Local Python venv setup and Docker orchestrations.
+- 📘 **[User Manual](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/USER_MANUAL.md)**: CCTV filters, payment transactions, and uploads controls.
+- 📡 **[API Documentation](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/API_DOCUMENTATION.md)**: Details on REST routers, JSON schemas, and authorization.
+- 🗄️ **[Database Schema](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/DATABASE_SCHEMA.md)**: DDL structure for tables, keys, and indexes.
+- 🏗️ **[Architecture Diagram](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/ARCHITECTURE.md)**: Diagrams representing front-end layers, backend frameworks, and AI runtimes.
+- 🔄 **[Project Flow Diagram](file:///c:/Users/Jaspreet/OneDrive/Desktop/Traffic%20Violation/docs/PROJECT_FLOW.md)**: Sequence map showing telemetry frame processing from capture to notifications.
+
 ---
 
 ## ⚡ Key Features
