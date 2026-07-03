@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models import User, ActivityLog
 from backend.app.auth.jwt import (
-    authenticate_user_db_check, # Wait, let's write it in auth.py directly or use JWT
     verify_password,
     get_password_hash,
     create_access_token,
