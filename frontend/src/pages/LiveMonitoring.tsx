@@ -69,6 +69,16 @@ export default function LiveMonitoring() {
   const [roadDamageScanner, setRoadDamageScanner] = useState(false);
   const [weatherType, setWeatherType] = useState<"sunny" | "rainy" | "foggy">("sunny");
   
+  // Real-time AI Target Spotter panel state
+  const [spottedTarget, setSpottedTarget] = useState({
+    vehicle: "Car",
+    plate: "PB10AB1234",
+    speed: 72,
+    violation: "No Helmet",
+    confidence: 98,
+    time: "10:35:26"
+  });
+  
   // HUD Alerts triggered by AI loop
   const [isAccidentAlert, setIsAccidentAlert] = useState(false);
   const [isEmergencyAlert, setIsEmergencyAlert] = useState(false);
@@ -208,18 +218,31 @@ export default function LiveMonitoring() {
     
     const interval = setInterval(() => {
       if (selectedCam.status === "offline") return;
-      const time = new Date().toLocaleTimeString();
-      const type = vTypes[Math.floor(Math.random() * vTypes.length)];
-      const plate = plates[Math.floor(Math.random() * plates.length)];
-      const speed = Math.floor(Math.random() * 55) + 30;
+      
+      const time = new Date().toTimeString().split(" ")[0]; // e.g. "10:35:26"
+      const isReqDemo = Math.random() < 0.35;
+      
+      const type = isReqDemo ? "Car" : vTypes[Math.floor(Math.random() * vTypes.length)];
+      const plate = isReqDemo ? "PB10AB1234" : plates[Math.floor(Math.random() * plates.length)];
+      const speed = isReqDemo ? 72 : Math.floor(Math.random() * 45) + 35;
+      const violation = isReqDemo ? "No Helmet" : (Math.random() < 0.25 ? "Wrong Lane Driving" : "None");
+      const confidence = isReqDemo ? 98 : Math.floor(Math.random() * 8) + 91;
+
+      // Sync Real-Time AI Target Spotter HUD panel
+      setSpottedTarget({
+        vehicle: type,
+        plate: plate,
+        speed: speed,
+        violation: violation === "None" ? "No Violation" : violation,
+        confidence: confidence,
+        time: time
+      });
 
       let logText = `${type} logged (Plate: ${plate}) | Speed: ${speed} km/h`;
-      let isViolation = false;
+      let isViolation = violation !== "None";
 
-      if (Math.random() < 0.22) {
-        isViolation = true;
-        const violations = ["Wrong Lane Driving", "Wrong Direction", "Red Light Jump", "Stop Line Crossing", "No Helmet Riding"];
-        logText = `⚠️ INCIDENT: ${violations[Math.floor(Math.random() * violations.length)]} by ${type} (${plate}). Fine logged.`;
+      if (isViolation) {
+        logText = `⚠️ INCIDENT: ${violation} by ${type} (${plate}). Fine logged.`;
       }
 
       setLogs((prev) => [
@@ -951,6 +974,61 @@ export default function LiveMonitoring() {
                     </Badge>
                   </div>
 
+                </div>
+              </Card>
+
+              {/* Real-Time AI Target Spotter Panel */}
+              <Card className="glass-card p-5 space-y-4 border-blue-500/20 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Activity size={15} className="text-blue-500 animate-pulse" />
+                    AI Target Spotter
+                  </span>
+                  <Badge variant="outline" className="text-[8px] border-blue-500/30 text-blue-500 font-bold py-0.5 animate-pulse">
+                    ACTIVE MODEL
+                  </Badge>
+                </CardTitle>
+                
+                <div className="space-y-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-450 uppercase text-[9px] font-bold">Vehicle Class</span>
+                    <strong className="text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                      <Car size={13} className="text-blue-400" />
+                      {spottedTarget.vehicle}
+                    </strong>
+                  </div>
+                  
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">Licence Plate</span>
+                    <Badge className="bg-slate-900 border border-slate-750 text-white font-mono text-[10.5px] px-2 py-0.5 tracking-wider">
+                      {spottedTarget.plate}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">Target Speed</span>
+                    <strong className={`text-xs ${spottedTarget.speed > 60 ? 'text-red-500 font-extrabold animate-pulse' : 'text-slate-800 dark:text-slate-100'}`}>
+                      {spottedTarget.speed} km/h
+                    </strong>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">Infraction Type</span>
+                    <Badge variant={spottedTarget.violation === 'No Helmet' || spottedTarget.violation === 'Wrong Lane Driving' ? 'destructive' : 'secondary'} className="text-[9.5px] font-bold py-0.5">
+                      {spottedTarget.violation}
+                    </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">Model Confidence</span>
+                    <strong className="text-emerald-500 font-extrabold">{spottedTarget.confidence}%</strong>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-455 uppercase text-[9px] font-bold">Capture Time</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono text-[10px]">{spottedTarget.time}</span>
+                  </div>
                 </div>
               </Card>
 
