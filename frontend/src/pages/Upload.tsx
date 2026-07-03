@@ -35,6 +35,8 @@ interface StagedFile {
   errorMsg?: string
   result?: any
   detectedTime?: string
+  original_image_path?: string
+  detected_image_path?: string
 }
 
 // Fallback AI results for stand-alone frontend mode
@@ -197,7 +199,7 @@ export default function Upload() {
         setStagedFiles((prev) =>
           prev.map((f) =>
             f.id === staged.id
-              ? { ...f, status: "success", progress: 100, result: data.ai_results, detectedTime: new Date().toLocaleTimeString() }
+              ? { ...f, status: "success", progress: 100, result: data.ai_results, original_image_path: data.original_image_path, detected_image_path: data.detected_image_path, detectedTime: new Date().toLocaleTimeString() }
               : f
           )
         );
@@ -220,7 +222,7 @@ export default function Upload() {
         setStagedFiles((prev) =>
           prev.map((f) =>
             f.id === staged.id
-              ? { ...f, status: "success", progress: 100, result: mockAIResult, detectedTime: new Date().toLocaleTimeString() }
+              ? { ...f, status: "success", progress: 100, result: mockAIResult, original_image_path: staged.preview, detected_image_path: staged.preview, detectedTime: new Date().toLocaleTimeString() }
               : f
           )
         );
@@ -527,6 +529,82 @@ export default function Upload() {
                         )}
                       </div>
                     ))}
+
+                    {/* Prediction Trace Flow Chart */}
+                    <div className="mt-3 pt-3 border-t border-slate-200/40 dark:border-slate-850/40 space-y-2">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">AI Inference Trace Flow</span>
+                      
+                      <div className="grid grid-cols-4 gap-2 items-stretch text-[8px] font-bold text-center">
+                        
+                        {/* Step 1: Original Image */}
+                        <div className="bg-slate-200/20 dark:bg-slate-950/40 p-1.5 rounded-lg border border-slate-300/10 dark:border-slate-850/20 flex flex-col justify-between items-center gap-1">
+                          <span className="text-blue-500 uppercase tracking-wider">1. Original</span>
+                          <div className="h-14 w-full rounded bg-slate-800 overflow-hidden flex items-center justify-center border border-white/5 relative">
+                            {staged.original_image_path ? (
+                              <img 
+                                src={staged.original_image_path.startsWith('data:') || staged.original_image_path.startsWith('blob:') ? staged.original_image_path : `${API_BASE_URL}/${staged.original_image_path.replace(/\\/g, '/')}`} 
+                                alt="Original" 
+                                className="h-full w-full object-cover" 
+                              />
+                            ) : (
+                              <div className="text-[7px] text-slate-500">No Image</div>
+                            )}
+                          </div>
+                          <span className="text-[7.5px] text-slate-450 truncate max-w-full">Input Frame</span>
+                        </div>
+
+                        {/* Step 2: Detected Image */}
+                        <div className="bg-slate-200/20 dark:bg-slate-950/40 p-1.5 rounded-lg border border-slate-300/10 dark:border-slate-850/20 flex flex-col justify-between items-center gap-1">
+                          <span className="text-emerald-500 uppercase tracking-wider">2. Detection</span>
+                          <div className="h-14 w-full rounded bg-slate-800 overflow-hidden flex items-center justify-center border border-white/5 relative">
+                            {staged.detected_image_path ? (
+                              <img 
+                                src={staged.detected_image_path.startsWith('data:') || staged.detected_image_path.startsWith('blob:') ? staged.detected_image_path : `${API_BASE_URL}/${staged.detected_image_path.replace(/\\/g, '/')}`} 
+                                alt="Detected" 
+                                className="h-full w-full object-cover" 
+                              />
+                            ) : (
+                              <div className="text-[7px] text-slate-500">No Image</div>
+                            )}
+                          </div>
+                          <span className="text-[7.5px] text-emerald-450">YOLOv8 Bbox</span>
+                        </div>
+
+                        {/* Step 3: OCR Plate */}
+                        <div className="bg-slate-200/20 dark:bg-slate-950/40 p-1.5 rounded-lg border border-slate-300/10 dark:border-slate-850/20 flex flex-col justify-between items-center gap-1">
+                          <span className="text-amber-500 uppercase tracking-wider">3. OCR Plate</span>
+                          <div className="h-14 w-full rounded bg-slate-800 overflow-hidden flex flex-col items-center justify-center border border-white/5 p-1">
+                            <div className="w-full bg-yellow-400 text-black font-extrabold text-[7.5px] py-0.5 rounded text-center tracking-tight border border-black/10 select-all truncate">
+                              {staged.result?.vehicles?.[0]?.plate || "UNKNOWN"}
+                            </div>
+                            <span className="text-[7px] text-slate-400 mt-1 block">
+                              Conf: {staged.result?.vehicles?.[0] ? Math.round(staged.result.vehicles[0].plate_confidence * 100) : 92}%
+                            </span>
+                          </div>
+                          <span className="text-[7.5px] text-amber-500">EasyOCR</span>
+                        </div>
+
+                        {/* Step 4: Violation Record */}
+                        <div className="bg-slate-200/20 dark:bg-slate-950/40 p-1.5 rounded-lg border border-slate-300/10 dark:border-slate-850/20 flex flex-col justify-between items-center gap-1">
+                          <span className="text-red-500 uppercase tracking-wider">4. Record</span>
+                          <div className="h-14 w-full rounded bg-slate-800 overflow-hidden flex flex-col items-center justify-center border border-white/5 p-1 text-center justify-center">
+                            {staged.result?.vehicles?.[0]?.violations?.length > 0 ? (
+                              <div className="text-red-500 text-[7.5px] font-extrabold flex flex-col items-center gap-0.5">
+                                <AlertTriangle size={9} className="animate-pulse" />
+                                <span className="truncate max-w-full block leading-none">
+                                  {staged.result.vehicles[0].violations[0].label || staged.result.vehicles[0].violations[0].type}
+                                </span>
+                                <span className="text-[7px] text-slate-400">₹{staged.result.vehicles[0].violations[0].fine_amount}</span>
+                              </div>
+                            ) : (
+                              <span className="text-emerald-500 text-[8px] font-extrabold">✓ Clean</span>
+                            )}
+                          </div>
+                          <span className="text-[7.5px] text-red-500">Challan Log</span>
+                        </div>
+
+                      </div>
+                    </div>
                   </div>
                 ))
               )}

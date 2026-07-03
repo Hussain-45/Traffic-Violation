@@ -304,6 +304,8 @@ async def upload_evidence(
     return {
         "success": True,
         "message": f"Processed successfully. Created {len(detected_violations)} violations.",
+        "original_image_path": f"data/uploads/{sub_dir}/{unique_fn}",
+        "detected_image_path": ai_result["detected_image_path"],
         "ai_results": {
             "vehicles": ai_result["vehicles"],
             "signal_state": ai_result["signal_state"],
