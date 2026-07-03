@@ -116,6 +116,40 @@ export default function LiveMonitoring() {
   const frameCountRef = useRef<number>(0);
   const lastFpsUpdateTimeRef = useRef<number>(performance.now());
 
+  // Mobile Camera states
+  const [mobileCamUrl, setMobileCamUrl] = useState("http://192.168.1.50:8080/video");
+  const [mobileCamType, setMobileCamType] = useState("IP Webcam");
+  const [mobileCamStatus, setMobileCamStatus] = useState<"disconnected" | "connecting" | "streaming" | "error">("disconnected");
+  const [isMobileCamActive, setIsMobileCamActive] = useState(false);
+  const isMobileCamActiveRef = useRef(false);
+  const mobileImageRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    isMobileCamActiveRef.current = isMobileCamActive;
+  }, [isMobileCamActive]);
+
+  useEffect(() => {
+    if (isMobileCamActive && mobileCamStatus === "streaming" && mobileCamUrl.startsWith("http")) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = mobileCamUrl;
+      img.onload = () => {
+        mobileImageRef.current = img;
+      };
+      img.onerror = () => {
+        console.warn("Mobile camera connection failed or blocked by CORS.");
+        setMobileCamStatus("error");
+        setIsMobileCamActive(false);
+      };
+      return () => {
+        img.src = "";
+        mobileImageRef.current = null;
+      };
+    } else {
+      mobileImageRef.current = null;
+    }
+  }, [isMobileCamActive, mobileCamStatus, mobileCamUrl]);
+
   // Increment simulated telemetry counts
   useEffect(() => {
     const timer = setInterval(() => {
@@ -279,7 +313,9 @@ export default function LiveMonitoring() {
       frameNumber++;
       
       // 1. Draw Stream Source
-      if (selectedCam.stream_type === "webcam" && webcamVideoRef.current && webcamVideoRef.current.readyState >= 2) {
+      if (isMobileCamActiveRef.current && mobileImageRef.current) {
+        ctx.drawImage(mobileImageRef.current, 0, 0, canvas.width, canvas.height);
+      } else if (selectedCam.stream_type === "webcam" && webcamVideoRef.current && webcamVideoRef.current.readyState >= 2) {
         ctx.drawImage(webcamVideoRef.current, 0, 0, canvas.width, canvas.height);
       } else {
         ctx.fillStyle = "#0f172a";
@@ -995,6 +1031,106 @@ export default function LiveMonitoring() {
                     </Badge>
                   </div>
 
+                </div>
+              </Card>
+
+              {/* Mobile Camera Integration */}
+              <Card className="glass-card p-5 space-y-4 border-blue-500/10 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Radio size={15} className="text-blue-500 animate-pulse" />
+                    Mobile Camera Integration
+                  </span>
+                  <Badge 
+                    variant={mobileCamStatus === "streaming" ? "success" : mobileCamStatus === "connecting" ? "outline" : mobileCamStatus === "error" ? "destructive" : "secondary"} 
+                    className="text-[8px] font-bold py-0.5 px-2 uppercase"
+                  >
+                    {mobileCamStatus}
+                  </Badge>
+                </CardTitle>
+
+                <div className="space-y-3 text-xs">
+                  {/* Service Type Selection */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stream Protocol</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {["IP Webcam", "RTSP", "DroidCam"].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setMobileCamType(type);
+                            if (type === "IP Webcam") setMobileCamUrl("http://192.168.1.50:8080/video");
+                            else if (type === "DroidCam") setMobileCamUrl("http://192.168.1.50:4747/video");
+                            else setMobileCamUrl("rtsp://192.168.1.50:554/live");
+                          }}
+                          className={`py-1 text-[9px] font-bold rounded-lg border transition-all ${
+                            mobileCamType === type 
+                              ? "bg-blue-600 text-white border-blue-500 shadow-sm" 
+                              : "bg-slate-900 border-white/5 text-slate-450 hover:text-white"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* URL Input */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Camera Stream URL</label>
+                    <input
+                      type="text"
+                      value={mobileCamUrl}
+                      onChange={(e) => setMobileCamUrl(e.target.value)}
+                      placeholder="http://192.168.1.50:8080/video"
+                      disabled={mobileCamStatus === "streaming" || mobileCamStatus === "connecting"}
+                      className="w-full h-8 rounded-xl bg-slate-900 border border-white/10 px-2.5 text-xs text-white outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Controls */}
+                  <div className="grid grid-cols-2 gap-2 pt-1.5">
+                    {mobileCamStatus === "disconnected" || mobileCamStatus === "error" ? (
+                      <Button
+                        onClick={() => {
+                          setMobileCamStatus("connecting");
+                          setTimeout(() => {
+                            setMobileCamStatus("streaming");
+                            setIsMobileCamActive(true);
+                          }, 1500);
+                        }}
+                        className="w-full h-8 text-[10px] font-bold bg-blue-650 hover:bg-blue-500 text-white rounded-xl shadow-md shadow-blue-500/20 col-span-2"
+                      >
+                        Connect Mobile Camera
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            setMobileCamStatus("disconnected");
+                            setIsMobileCamActive(false);
+                          }}
+                          className="w-full h-8 text-[10px] font-bold rounded-xl"
+                        >
+                          Stop
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setMobileCamStatus("connecting");
+                            setTimeout(() => {
+                              setMobileCamStatus("streaming");
+                            }, 1200);
+                          }}
+                          className="w-full h-8 text-[10px] font-bold rounded-xl"
+                        >
+                          Reconnect
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </Card>
 
