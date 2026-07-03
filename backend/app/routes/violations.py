@@ -68,6 +68,7 @@ def get_violations(
     location: Optional[str] = None,
     status: Optional[str] = None,
     plate: Optional[str] = None,
+    owner: Optional[str] = None,
     camera_id: Optional[str] = None,
     start_date: Optional[datetime.datetime] = None,
     end_date: Optional[datetime.datetime] = None,
@@ -90,6 +91,8 @@ def get_violations(
         filters.append(Violation.camera_id == camera_id)
     if plate:
         filters.append(Vehicle.license_plate.ilike(f"%{plate}%"))
+    if owner:
+        filters.append(Vehicle.owner_name.ilike(f"%{owner}%"))
     if start_date:
         filters.append(Violation.timestamp >= start_date)
     if end_date:

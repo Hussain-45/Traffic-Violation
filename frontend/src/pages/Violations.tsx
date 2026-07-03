@@ -111,6 +111,7 @@ export default function Violations() {
 
   // Search Fields
   const [searchPlate, setSearchPlate] = useState<string>("");
+  const [searchOwner, setSearchOwner] = useState<string>("");
   const [searchLocation, setSearchLocation] = useState<string>("");
   const [searchCameraId, setSearchCameraId] = useState<string>("");
   const [searchOfficerNotes, setSearchOfficerNotes] = useState<string>("");
@@ -146,6 +147,7 @@ export default function Violations() {
 
       // Append search fields
       if (searchPlate) url += `&plate=${searchPlate}`;
+      if (searchOwner) url += `&owner=${searchOwner}`;
       if (searchLocation) url += `&location=${searchLocation}`;
       if (searchCameraId) url += `&camera_id=${searchCameraId}`;
       if (searchOfficerNotes) url += `&officer_notes=${searchOfficerNotes}`;
@@ -183,6 +185,7 @@ export default function Violations() {
   }, [
     page,
     searchPlate,
+    searchOwner,
     searchLocation,
     searchCameraId,
     searchOfficerNotes,
@@ -235,6 +238,7 @@ export default function Violations() {
 
   const clearAllFilters = () => {
     setSearchPlate("");
+    setSearchOwner("");
     setSearchLocation("");
     setSearchCameraId("");
     setSearchOfficerNotes("");
@@ -388,15 +392,27 @@ export default function Violations() {
 
       {/* Main Search Panel */}
       <Card className="glass-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-        <div className="relative w-full md:w-64">
-          <Search size={14} className="absolute left-3 top-3 text-slate-400" />
-          <Input
-            type="text"
-            placeholder="Search license plate..."
-            value={searchPlate}
-            onChange={(e) => { setSearchPlate(e.target.value); setPage(1); }}
-            className="pl-9 text-xs"
-          />
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-1">
+          <div className="relative w-full md:w-48">
+            <Search size={14} className="absolute left-3 top-3 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search license plate..."
+              value={searchPlate}
+              onChange={(e) => { setSearchPlate(e.target.value); setPage(1); }}
+              className="pl-9 text-xs"
+            />
+          </div>
+          <div className="relative w-full md:w-48">
+            <User size={14} className="absolute left-3 top-3 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search vehicle owner..."
+              value={searchOwner}
+              onChange={(e) => { setSearchOwner(e.target.value); setPage(1); }}
+              className="pl-9 text-xs"
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">

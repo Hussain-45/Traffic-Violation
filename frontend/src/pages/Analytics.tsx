@@ -644,6 +644,73 @@ export default function Analytics() {
         {/* Tab 3: Spatial Heatmap */}
         <TabsContent value="spatial" className="space-y-6">
           
+          {/* Spatial Heatmap Visualizer Map */}
+          <Card className="glass-card p-6 border-slate-200/20 dark:border-slate-800/20 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 pb-3">
+              <Map size={16} className="text-red-500 animate-pulse" />
+              AI Violation Spatial Density Hotspot Map
+            </CardTitle>
+            
+            <div className="relative h-64 bg-slate-950/60 rounded-2xl border border-slate-800/60 overflow-hidden flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#020617_1px,transparent_1px),linear-gradient(to_bottom,#020617_1px,transparent_1px)] bg-[size:16px_16px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-70"></div>
+              
+              <svg className="w-full h-full min-h-[220px]" viewBox="0 0 800 300">
+                <path d="M 100 150 L 700 150" stroke="#1e293b" strokeWidth="2.5" strokeDasharray="5,5" />
+                <path d="M 400 30 L 400 270" stroke="#1e293b" strokeWidth="2.5" strokeDasharray="5,5" />
+                <path d="M 250 80 L 550 220" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="3,3" />
+                <path d="M 250 220 L 550 80" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                {/* Hotspot Circles */}
+                <g className="cursor-pointer group">
+                  <circle cx="200" cy="110" r="28" className="fill-red-500/10 stroke-red-500/30 stroke-2" />
+                  <circle cx="200" cy="110" r="10" className="fill-red-500 animate-ping opacity-60" />
+                  <circle cx="200" cy="110" r="5" className="fill-red-500" />
+                  <text x="200" y="70" textAnchor="middle" className="fill-slate-400 font-extrabold text-[8px] uppercase tracking-wider">Connaught Place</text>
+                  <text x="200" y="80" textAnchor="middle" className="fill-red-500 font-extrabold text-[7.5px]">85% Risk</text>
+                </g>
+
+                <g className="cursor-pointer group">
+                  <circle cx="400" cy="150" r="22" className="fill-amber-500/10 stroke-amber-500/30 stroke-2" />
+                  <circle cx="400" cy="150" r="8" className="fill-amber-500 animate-ping opacity-60" />
+                  <circle cx="400" cy="150" r="4.5" className="fill-amber-500" />
+                  <text x="400" y="115" textAnchor="middle" className="fill-slate-400 font-extrabold text-[8px] uppercase tracking-wider">India Gate</text>
+                  <text x="400" y="125" textAnchor="middle" className="fill-amber-500 font-extrabold text-[7.5px]">55% Risk</text>
+                </g>
+
+                <g className="cursor-pointer group">
+                  <circle cx="150" cy="200" r="24" className="fill-amber-500/10 stroke-amber-500/30 stroke-2" />
+                  <circle cx="150" cy="200" r="8" className="fill-amber-500 animate-ping opacity-60" />
+                  <circle cx="150" cy="200" r="4.5" className="fill-amber-500" />
+                  <text x="150" y="165" textAnchor="middle" className="fill-slate-400 font-extrabold text-[8px] uppercase tracking-wider">Rajouri Garden</text>
+                  <text x="150" y="175" textAnchor="middle" className="fill-amber-500 font-extrabold text-[7.5px]">62% Risk</text>
+                </g>
+
+                <g className="cursor-pointer group">
+                  <circle cx="600" cy="190" r="32" className="fill-red-500/10 stroke-red-500/30 stroke-2" />
+                  <circle cx="600" cy="190" r="12" className="fill-red-500 animate-ping opacity-60" />
+                  <circle cx="600" cy="190" r="6" className="fill-red-500" />
+                  <text x="600" y="145" textAnchor="middle" className="fill-slate-400 font-extrabold text-[8px] uppercase tracking-wider">AIIMS Crossing</text>
+                  <text x="600" y="155" textAnchor="middle" className="fill-red-500 font-extrabold text-[7.5px]">92% Risk</text>
+                </g>
+
+                <g className="cursor-pointer group">
+                  <circle cx="550" cy="70" r="14" className="fill-emerald-500/10 stroke-emerald-500/30 stroke-2" />
+                  <circle cx="550" cy="70" r="6" className="fill-emerald-500 animate-ping opacity-60" />
+                  <circle cx="550" cy="70" r="3.5" className="fill-emerald-500" />
+                  <text x="550" y="40" textAnchor="middle" className="fill-slate-400 font-extrabold text-[8px] uppercase tracking-wider">Karol Bagh</text>
+                  <text x="550" y="50" textAnchor="middle" className="fill-emerald-500 font-extrabold text-[7.5px]">28% Risk</text>
+                </g>
+              </svg>
+
+              <div className="absolute bottom-3 left-4 flex gap-3 text-[8.5px] font-bold text-slate-450 uppercase tracking-widest bg-slate-900/60 px-3 py-1.5 rounded-lg border border-white/5">
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500"></span> High Risk (&gt;70%)</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500"></span> Med Risk (40%-70%)</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500"></span> Low Risk (&lt;40%)</span>
+              </div>
+            </div>
+          </Card>
+
           {/* 7. Sector Danger Heatmap Grid */}
           <Card className="glass-card p-6 space-y-4">
             <CardHeader className="p-0">
