@@ -36,6 +36,14 @@ def seed_db():
                 password_hash=get_password_hash("officer123"),
                 role="officer",
                 status="active"
+            ),
+            User(
+                username="vidya",
+                email="vidya@smarttraffic.gov.in",
+                full_name="Officer Vidya",
+                password_hash=get_password_hash("vidhya"),
+                role="officer",
+                status="active"
             )
         ]
         db.add_all(users)

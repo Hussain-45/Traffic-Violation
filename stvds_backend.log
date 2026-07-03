@@ -81,3 +81,4 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2026-07-03 23:41:49,424 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 401 - Duration: 3.48ms
 2026-07-03 23:41:49,431 [INFO] STVDS: HTTP GET /api/v1/auth/me - Status: 401 - Duration: 2.79ms
 2026-07-03 23:42:02,706 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 401 - Duration: 7.78ms
+2026-07-03 23:42:07,459 [INFO] STVDS: HTTP POST /api/v1/auth/login - Status: 401 - Duration: 7.93ms
