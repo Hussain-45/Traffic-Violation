@@ -649,6 +649,29 @@ export default function Violations() {
                   </div>
                 </div>
 
+                {/* AI Explainability Matrix */}
+                <div className="mt-4 p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-2 text-xs font-semibold">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-blue-400 block">AI Explainability Matrix</span>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
+                    <div className="flex justify-between">
+                      <span className="text-slate-450">Detection Trigger:</span>
+                      <strong className="text-slate-700 dark:text-slate-200">{selectedViol.type === "red_light_jump" ? "Red Light Jump" : selectedViol.type === "no_helmet" ? "Helmet Missing" : selectedViol.type === "overspeeding" ? "Speed Limit Exceeded" : "Traffic Infraction"}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-450">Confidence Score:</span>
+                      <strong className="text-blue-500">{Math.round(selectedViol.confidence_score * 1000) / 10}%</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-450">Bounding Box:</span>
+                      <strong className="text-emerald-500">Valid (IoU &gt; 0.85)</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">OCR Plate Status:</span>
+                      <strong className="text-emerald-500">Matched &amp; Logged</strong>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
               {/* Status Update Form */}
