@@ -1,192 +1,85 @@
-# 🚦 AI-Powered Smart Traffic Violation Detection System
+# 🚦 Smart Traffic Violation Detection System (STVDS)
 
-A production-quality, smart city government dashboard designed for automated traffic violation monitoring, vehicle tracking, license plate recognition (OCR), and fine administration.
-
----
-
-## 🏗️ Core Technology Stack
-
-### Frontend Hub
-- **React (Vite + TypeScript)**: Type-safe, high-performance UI structure.
-- **Tailwind CSS v4**: Built natively with the `@tailwindcss/vite` compiler plugin for sleek grid designs.
-- **Framer Motion**: Smooth micro-animations, slide-over sheets, and alert transitions.
-- **Recharts**: Responsive chart libraries for monthly/daily violations, vehicle ratios, and collections.
-- **React Router**: Protected router guards with role-based validation.
-- **Lucide Icons**: Modern vector icon libraries for HUD status dashboards.
-
-### API Backend
-- **FastAPI**: Asynchronous Python web framework with auto-generated Swagger UI docs.
-- **SQLAlchemy ORM**: Database mapping configurations.
-- **Python-Multipart & Uvicorn**: Direct media upload handling and HTTP server.
-- **Pandas & Openpyxl**: Dynamic CSV/XLSX export spreadsheets creation.
-
-### Database Layer
-- **SQLite**: Local file database for zero-config rapid local runs.
-- **PostgreSQL**: Production-ready containerized relational database.
-
-### AI Inference Pipeline (Dual-Mode)
-- **YOLOv8**: Object tracking models mapping vehicle boxes and signal lights.
-- **EasyOCR**: Optical Character Recognition engine isolating license plate numbers.
-- **OpenCV**: Image overlays, cropping, and dynamic HTML5 Canvas rendering.
+A next-generation, high-performance intelligent transportation command system powered by **YOLOv8** and **EasyOCR** for automated vehicle target classification, licence plate recognition, traffic infraction tracking, live camera monitoring, interactive map analytics, and automated fine tariff management.
 
 ---
 
-## ⚙️ How the AI Pipeline Works
+## ⚡ Key Features
 
-The system includes a **Dual-Mode AI Engine** configurable via settings to accommodate different hardware resources:
-
-```mermaid
-flowchart TD
-    A[Traffic Camera Input / Uploaded Media] --> B{AI Pipeline Switch}
-    B -- Active Mode --> C[YOLOv8 Object Detection]
-    B -- Simulated Mode --> D[OpenCV Physics Engine]
-    
-    C --> C1[Vehicle Tracking & Classification]
-    C --> C2[Traffic Light State Detection]
-    C --> C3[Infraction Verification]
-    
-    D --> D1[Mock Speed & Trajectory Tracker]
-    D --> D2[Randomized Infraction Generator]
-    
-    C1 & C2 & C3 --> E[License Plate ROI Crop]
-    D1 & D2 --> E
-    
-    E --> F{AI OCR Mode}
-    F -- Active Mode --> G[EasyOCR Character Recognition]
-    F -- Simulated Mode --> H[Plate String Deterministic Mock]
-    
-    G & H --> I[FastAPI REST API Backend]
-    I --> J[JSON Web Token Validation]
-    J --> K[PostgreSQL / SQLite Database Write]
-    
-    K --> L[React Frontend Dashboard]
-    L --> L1[Visual Telecharts & Graphs]
-    L --> L2[Live Canvas Monitor HUD Stream]
-    L --> L3[Excel/CSV Analytics Reports]
-```
+1. **AI Vehicle & Licence Plate Recognition**:
+   - Automated vehicle segmentation (Cars, Motorcycles, Trucks, Buses, Auto-rickshaws).
+   - High-fidelity Licence Plate OCR cropping and translation.
+2. **8 Core AI Infraction Classifiers**:
+   - No Helmet detection, Seatbelt checks, Triple riding, Wrong-lane driving, Wrong-direction alerts, Stop-line crossing detection, Red light violations, and Illegal parking detection.
+3. **Live CCTV Command Desk**:
+   - Supports local webcams, RTSP stream URLs, and simulated junction streams.
+   - Real-time bounding boxes, live FPS monitors, and camera link toggles.
+4. **10 Advanced AI Scanner Tools**:
+   - **Night Vision Filter**: CSS-based green infrared thermal lens enhancement.
+   - **Weather Sensor Overlays**: Dynamic canvas rain particles and fog filters.
+   - **Pedestrian Face Blur**: Automatic anonymization for privacy.
+   - **Road Damage Detector**: Live scanning of road lane cracks and potholes.
+   - **Stolen Vehicle Alarm**: Database checks that trigger critical cruiser intercepts.
+   - **Emergency приоритет**: Prioritizes emergency vehicles (Ambulance, Fire, Police).
+5. **Interactive GIS Hotspot Map**:
+   - Displays geolocated cameras, violation markers, Delhi NCR sector risk heatmaps, and danger zones.
+6. **Analytics & Reporting Desk**:
+   - 7 interactive charts displaying peak hours, monthly trends, and revenue metrics.
+   - Data compilation with PDF generation and Pandas Excel/CSV exporters.
+7. **Fine challan & notifications system**:
+   - Automatic fine generation, UPI/Cash payment settlements, and official receipts.
+   - Real-time Topbar alert trays and full notifications history lists.
 
 ---
 
-## 📂 Project Structure
+## 🛠️ Tech Stack
 
-```
-Traffic Violation/
-├── backend/
-│   ├── app/
-│   │   ├── ai/
-│   │   │   └── detector.py       # YOLOv8 & EasyOCR model switch
-│   │   ├── auth/
-│   │   │   └── jwt.py            # JWT token creation and password hashes
-│   │   ├── routes/
-│   │   │   ├── auth.py           # Login, registration, and user profiles
-│   │   │   ├── violations.py     # Image/Video upload endpoints
-│   │   │   ├── cameras.py        # CCTV registration controllers
-│   │   │   ├── dashboard.py      # Summary metrics resolvers
-│   │   │   ├── analytics.py      # Charts and spreadsheet exporters
-│   │   │   ├── users.py          # Officer administration controls
-│   │   │   └── settings.py       # Fine amounts and AI threshold config
-│   │   ├── config.py             # System directories and configurations
-│   │   ├── database.py           # DB connection sessions
-│   │   ├── models.py             # Database SQLAlchemy schemas
-│   │   └── main.py               # Main entry point & static folder mounts
-│   ├── requirements.txt          # Python dependencies
-│   └── Dockerfile                # Backend container config
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Sidebar.tsx       # Collapsible side navigation
-│   │   │   └── Topbar.tsx        # Breadcrumbs, themes, notifications, and user logs
-│   │   ├── components/ui/        # Reusable shadcn-style primitives
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── table.tsx
-│   │   │   ├── badge.tsx
-│   │   │   ├── select.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   └── tabs.tsx
-│   │   ├── pages/
-│   │   │   ├── Login.tsx         # Secure login and credentials reset
-│   │   │   ├── Dashboard.tsx     # KPI metrics, line/donut charts, and simulation triggers
-│   │   │   ├── LiveMonitoring.tsx# Multi-camera grid, filters, and canvas stream
-│   │   │   ├── Upload.tsx        # Bounding box crop upload engine
-│   │   │   ├── Violations.tsx    # Violations table database with action sheets
-│   │   │   ├── Analytics.tsx     # Downloadable data reports dashboard
-│   │   │   ├── Map.tsx           # Delhi sectors GPS coordinate map
-│   │   │   ├── Cameras.tsx       # Camera registries checklist
-│   │   │   ├── Users.tsx         # Officer roles dashboard
-│   │   │   └── Settings.tsx      # Fine rules tariff configuration
-│   │   ├── App.tsx               # Auth/Theme providers and router guards
-│   │   ├── index.css             # Tailwind imports & CSS custom properties
-│   │   └── main.tsx              # React Vite entrypoint
-│   ├── index.html                # App template index
-│   ├── package.json              # Frontend packages
-│   └── vite.config.ts            # Vite compilers path resolvers
-├── docker-compose.yml            # Multi-service docker orchestration
-├── run.bat                       # One-click Windows concurrent launcher
-└── README.md                     # Documentation
-```
+- **Backend**: Python 3.10, FastAPI, SQLite (SQLAlchemy ORM), YOLOv8 (Ultralytics), EasyOCR, Pandas, OpenPyXL.
+- **Frontend**: React 18, TypeScript, TailwindCSS, Lucide-React, Framer Motion, Chart.js.
+- **Orchestration**: Docker, Docker Compose, Nginx.
 
 ---
 
-## 🔒 Default Logins
+## 🚀 Quick Start (Local Setup)
 
-On initial launch, the database seeds default credentials:
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
 
-| Username | Password | Role | Description |
-| :--- | :--- | :--- | :--- |
-| **`admin`** | `admin123` | **admin** | Access to all logs, officer registrations, and system configurations. |
-| **`officer`** | `officer123` | **officer** | Access to dashboards, live camera telemetry, and violation resolution. |
-
----
-
-## 🚀 Installation & Local Execution
-
-### 1. Python FastAPI Backend
-Make sure you have **Python 3.10+** installed:
+### 1. Run the Backend
 ```bash
-# Navigate to backend folder
 cd backend
-
-# Create a virtual environment
 python -m venv venv
-# Activate it (Windows)
-.\venv\Scripts\activate
-# Activate it (macOS/Linux)
-source venv/bin/activate
-
-# Install dependencies
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Start Server
-python -m uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
-Swagger API docs will be active at [http://localhost:8000/docs](http://localhost:8000/docs).
+The backend API documentation will be available at `http://localhost:8000/docs`.
 
-### 2. Vite React Frontend
-Make sure you have **Node.js 18+** installed:
+### 2. Run the Frontend
 ```bash
-# Navigate to frontend folder
 cd frontend
-
-# Install node dependencies
 npm install
-
-# Start Vite dev server
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open your browser at `http://localhost:5173`.
 
 ---
 
-## 🖥️ Running on Windows (One-Click)
-Double-click the `run.bat` script in the root directory. It automatically opens two terminal windows and launches both the backend and frontend dev servers concurrently.
+## 🐳 Docker Deployment
 
----
+To spin up the entire production environment (FastAPI API service at port `8000` and React Nginx SPA at port `3000`) in one command:
 
-## 🐳 Running with Docker
-Orchestrate the entire platform (PostgreSQL, FastAPI, and Nginx for React) using:
 ```bash
-docker-compose up --build
+docker-compose up --build -d
 ```
-- **React Portal**: [http://localhost](http://localhost) (Port 80)
-- **FastAPI Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## 📡 Core API Routes
+
+- **Authentication**: `POST /api/v1/auth/login`, `POST /api/v1/auth/register`
+- **Violations**: `GET /api/v1/violations`, `POST /api/v1/violations/upload`
+- **Cameras**: `GET /api/v1/cameras`, `POST /api/v1/cameras`
+- **Fine Management**: `GET /api/v1/fines/rules`, `PUT /api/v1/fines/rules/{type}`, `POST /api/v1/fines/{id}/pay`
+- **Notifications**: `GET /api/v1/notifications`, `PUT /api/v1/notifications/read-all`

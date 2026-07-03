@@ -1,11 +1,25 @@
 import os
-from fastapi import FastAPI
+import time
+import logging
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.app.config import settings
 from backend.app.database import engine, Base
 from backend.app.routes import auth, violations, cameras, dashboard, analytics, users, settings as settings_routes, locations, reports, fines, notifications
 from backend.app.utils.seed import seed_db
+
+# Configure structured system logger
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("stvds_backend.log", encoding="utf-8")
+    ]
+)
+logger = logging.getLogger("STVDS")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -14,6 +28,33 @@ app = FastAPI(
     docs_url="/docs",
     openapi_url="/openapi.json"
 )
+
+# Global error exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled Exception on {request.method} {request.url.path}: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": "An unexpected error occurred in the Smart Traffic backend pipeline.",
+            "detail": str(exc)
+        }
+    )
+
+# Request-Response duration logging middleware
+@app.middleware("http")
+async def log_requests_middleware(request: Request, call_next):
+    start_time = time.time()
+    try:
+        response = await call_next(request)
+        process_time = (time.time() - start_time) * 1000
+        logger.info(f"HTTP {request.method} {request.url.path} - Status: {response.status_code} - Duration: {process_time:.2f}ms")
+        return response
+    except Exception as e:
+        process_time = (time.time() - start_time) * 1000
+        logger.error(f"HTTP {request.method} {request.url.path} failed - Duration: {process_time:.2f}ms - Error: {str(e)}")
+        raise e
 
 # CORS Middleware setup
 # Enable local React dev server and production domains

@@ -74,15 +74,15 @@ class Violation(Base):
     vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
     camera_id = Column(String, ForeignKey("cameras.id"), nullable=False)
     type = Column(String, nullable=False)  # red_light_jump, wrong_lane, overspeeding, etc.
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow, index=True)
     location = Column(String, nullable=False)
     fine_amount = Column(Float, nullable=False)
-    status = Column(String, default="pending")  # pending, paid, resolved
+    status = Column(String, default="pending", index=True)  # pending, paid, resolved
     evidence_image_path = Column(String, nullable=True)
     evidence_video_path = Column(String, nullable=True)
     confidence_score = Column(Float, default=1.0)
     officer_notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
 
     vehicle = relationship("Vehicle", back_populates="violations")
     camera = relationship("Camera", back_populates="violations")
@@ -156,7 +156,7 @@ class Notification(Base):
     title = Column(String, nullable=False)
     message = Column(Text, nullable=False)
     type = Column(String, nullable=False)  # fine, officer, system, camera
-    is_read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    is_read = Column(Boolean, default=False, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
 
     user = relationship("User", back_populates="notifications")
