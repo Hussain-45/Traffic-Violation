@@ -439,6 +439,16 @@ export default function LiveMonitoring() {
           ctx.lineWidth = 2.5;
           ctx.strokeRect(v.x, v.y, v.width, v.height);
 
+          // Trace line path vector (demonstrates multi-frame tracking history)
+          ctx.strokeStyle = `${boxColor}55`; // opacity
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(v.x, v.y + v.height / 2);
+          ctx.lineTo(Math.max(10, v.x - 80), v.y + v.height / 2);
+          ctx.stroke();
+          ctx.setLineDash([]); // Reset line dash
+
           // Face blur on driver cockpit if active
           if (faceBlur) {
             ctx.fillStyle = "rgba(50,50,50,0.98)";
@@ -447,11 +457,13 @@ export default function LiveMonitoring() {
             ctx.fill();
           }
 
-          // Label
+          // Label - Multi-frame persistent Tracking ID
           ctx.fillStyle = boxColor;
-          ctx.font = "bold 9px monospace";
+          ctx.font = "bold 9.5px monospace";
+          const trackingTag = `Vehicle #00${v.id}`;
           const classTag = v.isStolen ? "STOLEN!" : v.isEmergency ? "EMERGENCY" : v.type.toUpperCase();
-          ctx.fillText(`${classTag} [Conf: 0.91] (${Math.round(v.speed * 25)} km/h)`, v.x, v.y - 7);
+          ctx.fillText(`${trackingTag} | ${classTag} (${Math.round(v.speed * 25)} km/h)`, v.x, v.y - 7);
+
         });
       }
 
