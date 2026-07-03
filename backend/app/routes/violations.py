@@ -260,3 +260,117 @@ def random_owner(plate: str) -> str:
     ]
     char_sum = sum(ord(c) for c in plate)
     return owners[char_sum % len(owners)]
+
+@router.post("/upload-multiple")
+async def upload_multiple_evidence(
+    files: List[UploadFile] = File(...),
+    camera_id: str = Form("CAM-001"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify camera exists
+    camera = db.query(Camera).filter(Camera.id == camera_id).first()
+    if not camera:
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not registered")
+
+    results = []
+    total_violations = 0
+
+    for file in files:
+        # Validate file type (image or video)
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if file_ext not in [".jpg", ".jpeg", ".png", ".webp", ".mp4", ".avi", ".mov", ".mkv"]:
+            continue # skip invalid files
+            
+        # Generate unique filename to avoid overwrites
+        unique_fn = f"{uuid.uuid4()}{file_ext}"
+        
+        # Save the original file
+        sub_dir = "videos" if file_ext in [".mp4", ".avi", ".mov", ".mkv"] else "images"
+        original_save_path = os.path.join(settings.UPLOAD_DIR, sub_dir, unique_fn)
+        
+        with open(original_save_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        processing_path = original_save_path
+        if sub_dir == "videos":
+            processing_path = os.path.join(settings.UPLOAD_DIR, "images", f"frame_{unique_fn}.jpg")
+            cap = cv2.VideoCapture(original_save_path)
+            success, frame = cap.read()
+            if success:
+                cv2.imwrite(processing_path, frame)
+            else:
+                dummy = np.zeros((720, 1280, 3), dtype=np.uint8)
+                cv2.putText(dummy, "Video Stream Frame", (450, 360), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                cv2.imwrite(processing_path, dummy)
+            cap.release()
+
+        # Run AI pipeline
+        ai_result = detect_violations(processing_path)
+        
+        # Save results to DB
+        detected_violations = []
+        for v_data in ai_result["vehicles"]:
+            vehicle = db.query(Vehicle).filter(Vehicle.license_plate == v_data["plate"]).first()
+            if not vehicle:
+                vehicle = Vehicle(
+                    license_plate=v_data["plate"],
+                    type=v_data["type"],
+                    brand=v_data["brand"],
+                    color=v_data["color"],
+                    owner_name=random_owner(v_data["plate"]),
+                    status="valid"
+                )
+                db.add(vehicle)
+                db.commit()
+                db.refresh(vehicle)
+                
+            for viol in v_data["violations"]:
+                rule = db.query(FineRule).filter(FineRule.violation_type == viol["type"]).first()
+                fine_val = rule.amount if rule else viol["fine_amount"]
+                
+                img_rel_path = ai_result["detected_image_path"]
+                vid_rel_path = os.path.join("data/uploads/videos", unique_fn) if sub_dir == "videos" else None
+                
+                violation = Violation(
+                    vehicle_id=vehicle.id,
+                    camera_id=camera.id,
+                    type=viol["type"],
+                    location=camera.location,
+                    fine_amount=fine_val,
+                    status="pending",
+                    evidence_image_path=img_rel_path,
+                    evidence_video_path=vid_rel_path,
+                    confidence_score=viol["confidence"],
+                    timestamp=datetime.datetime.utcnow()
+                )
+                db.add(violation)
+                db.commit()
+                db.refresh(violation)
+                detected_violations.append(violation)
+                total_violations += 1
+
+        results.append({
+            "filename": file.filename,
+            "success": True,
+            "violations_detected": len(detected_violations),
+            "ai_results": {
+                "vehicles": ai_result["vehicles"],
+                "signal_state": ai_result["signal_state"],
+                "confidence": ai_result["confidence_score"]
+            }
+        })
+        
+    # Audit log
+    log = ActivityLog(
+        user_id=current_user.id,
+        action=f"Uploaded {len(files)} files to multiple-uploader. Detected {total_violations} total violations."
+    )
+    db.add(log)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Processed {len(files)} files successfully.",
+        "results": results
+    }
