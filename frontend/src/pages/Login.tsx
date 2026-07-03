@@ -13,6 +13,11 @@ export default function Login() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("officer");
+  const [isRegistering, setIsRegistering] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +31,38 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    if (isRegistering) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            email,
+            full_name: fullName,
+            password,
+            role,
+          }),
+        });
+
+        if (response.ok) {
+          setError("");
+          setIsRegistering(false);
+          setError("Registration successful! Please log in.");
+        } else {
+          const errData = await response.json();
+          setError(errData.detail || "Registration failed. Try again.");
+        }
+      } catch (err) {
+        console.warn("Backend offline. Simulating registration.");
+        setError("Registration successful (Simulation Mode)! Please log in.");
+        setIsRegistering(false);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     try {
       const bodyParams = new URLSearchParams();
@@ -55,12 +92,14 @@ export default function Login() {
       // Fallback local authentication for standalone frontend demo
       if (
         (username === "admin" && password === "admin123") ||
-        (username === "officer" && password === "officer123")
+        (username === "officer" && password === "officer123") ||
+        (username === "jaspreet" && password === "1526") ||
+        (username === "vidya" && password === "vidhya")
       ) {
         login("dummy-jwt-token", {
           username,
-          full_name: username === "admin" ? "Super Admin" : "Officer Rajesh",
-          role: username === "admin" ? "admin" : "officer",
+          full_name: username === "admin" ? "Super Admin" : username === "jaspreet" ? "Officer Jaspreet" : "Officer Rajesh",
+          role: username === "admin" || username === "jaspreet" ? "admin" : "officer",
         });
         navigate(redirectPath, { replace: true });
       } else {
@@ -102,10 +141,10 @@ export default function Login() {
           <CardHeader className="pb-4">
             <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
               <Sparkles size={16} className="text-blue-400" />
-              Portal Access Control
+              {isRegistering ? "Register Command Account" : "Portal Access Control"}
             </CardTitle>
             <CardDescription className="text-slate-400 text-[10px]">
-              Provide credentials to verify command credentials.
+              {isRegistering ? "Create your smart traffic credentials." : "Provide credentials to verify command credentials."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -118,6 +157,58 @@ export default function Login() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
+              {isRegistering && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User size={16} className="absolute left-3.5 top-3 text-slate-500" />
+                      <Input
+                        type="text"
+                        required
+                        placeholder="e.g. Jaspreet Singh"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="pl-10 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <User size={16} className="absolute left-3.5 top-3 text-slate-500" />
+                      <Input
+                        type="email"
+                        required
+                        placeholder="e.g. jaspreet@smarttraffic.gov.in"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                      Assigned Registry Role
+                    </label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full h-9 rounded-xl bg-slate-900 border border-white/10 px-3 text-xs text-white outline-none focus:border-blue-500"
+                    >
+                      <option value="officer">Traffic Officer (Read-Only Logs)</option>
+                      <option value="admin">System Administrator (Full Settings Console)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
               <div className="space-y-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Officer Username
@@ -140,13 +231,15 @@ export default function Login() {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Security Password
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setForgotModal(true)}
-                    className="text-[9px] font-bold text-blue-400 hover:text-blue-300"
-                  >
-                    Forgot Key?
-                  </button>
+                  {!isRegistering && (
+                    <button
+                      type="button"
+                      onClick={() => setForgotModal(true)}
+                      className="text-[9px] font-bold text-blue-400 hover:text-blue-300"
+                    >
+                      Forgot Key?
+                    </button>
+                  )}
                 </div>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3.5 top-3 text-slate-500" />
@@ -176,14 +269,22 @@ export default function Login() {
                 {loading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                 ) : (
-                  "Authenticate Session"
+                  isRegistering ? "Create Registry Account" : "Authenticate Session"
                 )}
               </Button>
             </form>
 
-            <div className="pt-3 border-t border-slate-900 flex justify-between items-center text-[9px] text-slate-500">
-              <span>Admin: <strong className="text-slate-400">admin / admin123</strong></span>
-              <span>Officer: <strong className="text-slate-400">officer / officer123</strong></span>
+            <div className="pt-3 border-t border-slate-900 flex justify-between items-center text-[10.5px] text-slate-500">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError("");
+                }}
+                className="text-blue-400 hover:underline font-bold text-center w-full"
+              >
+                {isRegistering ? "Already have an account? Sign In" : "Register Command Account"}
+              </button>
             </div>
           </CardContent>
         </Card>

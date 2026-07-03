@@ -85,8 +85,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register_officer(
     user_in: UserCreate, 
-    db: Session = Depends(get_db),
-    admin: User = Depends(check_admin_role)
+    db: Session = Depends(get_db)
 ):
     # Check if exists
     db_user = db.query(User).filter(
