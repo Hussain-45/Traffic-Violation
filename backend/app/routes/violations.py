@@ -216,6 +216,20 @@ async def upload_evidence(
     for v_data in ai_result["vehicles"]:
         # Find or create vehicle
         vehicle = db.query(Vehicle).filter(Vehicle.license_plate == v_data["plate"]).first()
+        is_stolen = False
+        if vehicle and vehicle.status == "stolen":
+            is_stolen = True
+            # Log critical alert
+            from backend.app.models import Notification
+            stolen_notif = Notification(
+                user_id=current_user.id,
+                title="🚨 STOLEN VEHICLE DETECTED!",
+                message=f"Stolen {vehicle.brand} ({vehicle.license_plate}) spotted at camera crossing. Critical interception dispatched.",
+                type="officer"
+            )
+            db.add(stolen_notif)
+            db.commit()
+            
         if not vehicle:
             # Check for suspicious vehicles / suspension
             # (Owner details generation)
@@ -231,6 +245,8 @@ async def upload_evidence(
             db.add(vehicle)
             db.commit()
             db.refresh(vehicle)
+            
+        v_data["is_stolen"] = is_stolen
             
         # Create violations for this vehicle
         for viol in v_data["violations"]:
@@ -348,7 +364,22 @@ async def upload_multiple_evidence(
         # Save results to DB
         detected_violations = []
         for v_data in ai_result["vehicles"]:
+            # Find or create vehicle
             vehicle = db.query(Vehicle).filter(Vehicle.license_plate == v_data["plate"]).first()
+            is_stolen = False
+            if vehicle and vehicle.status == "stolen":
+                is_stolen = True
+                # Log critical alert
+                from backend.app.models import Notification
+                stolen_notif = Notification(
+                    user_id=current_user.id,
+                    title="🚨 STOLEN VEHICLE DETECTED!",
+                    message=f"Stolen {vehicle.brand} ({vehicle.license_plate}) spotted at camera crossing. Critical interception dispatched.",
+                    type="officer"
+                )
+                db.add(stolen_notif)
+                db.commit()
+                
             if not vehicle:
                 vehicle = Vehicle(
                     license_plate=v_data["plate"],
@@ -361,6 +392,8 @@ async def upload_multiple_evidence(
                 db.add(vehicle)
                 db.commit()
                 db.refresh(vehicle)
+                
+            v_data["is_stolen"] = is_stolen
                 
             for viol in v_data["violations"]:
                 rule = db.query(FineRule).filter(FineRule.violation_type == viol["type"]).first()

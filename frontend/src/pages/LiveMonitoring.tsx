@@ -26,7 +26,11 @@ import {
   Plus,
   Tv,
   Globe,
-  Settings
+  Settings,
+  EyeOff,
+  Sun,
+  Flame,
+  CloudRain
 } from "lucide-react";
 
 interface CameraStream {
@@ -42,7 +46,6 @@ interface CameraStream {
   rtsp_url?: string
 }
 
-// Initial seeder cameras
 const initialCameras: CameraStream[] = [
   { id: "CAM-001", name: "Connaught Place Outer Ring", location: "Outer Ring Road, Connaught Place", status: "online", health: "good", vehicles_count: 42, violations_count: 5, ip_address: "192.168.10.51", stream_type: "simulated" },
   { id: "CAM-002", name: "India Gate Circle", location: "India Gate Radial Road", status: "online", health: "good", vehicles_count: 28, violations_count: 2, ip_address: "192.168.10.52", stream_type: "simulated" },
@@ -56,10 +59,27 @@ export default function LiveMonitoring() {
   const [cameras, setCameras] = useState<CameraStream[]>(initialCameras);
   const [selectedCam, setSelectedCam] = useState<CameraStream>(initialCameras[0]);
   
-  // Search & Filter options
+  // Search Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   
+  // Advanced AI toggles
+  const [faceBlur, setFaceBlur] = useState(false);
+  const [nightVision, setNightVision] = useState(false);
+  const [roadDamageScanner, setRoadDamageScanner] = useState(false);
+  const [weatherType, setWeatherType] = useState<"sunny" | "rainy" | "foggy">("sunny");
+  
+  // HUD Alerts triggered by AI loop
+  const [isAccidentAlert, setIsAccidentAlert] = useState(false);
+  const [isEmergencyAlert, setIsEmergencyAlert] = useState(false);
+  const [isFireAlert, setIsFireAlert] = useState(false);
+  const [isStolenAlert, setIsStolenAlert] = useState(false);
+  const [alertPlate, setAlertPlate] = useState("");
+  const [density, setDensity] = useState("Medium");
+  
+  // Counters
+  const [counts, setCounts] = useState({ car: 2, motorcycle: 1, truck: 0, bus: 0, auto: 1 });
+
   // Custom states
   const [showLanes, setShowLanes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -156,7 +176,6 @@ export default function LiveMonitoring() {
             { time: new Date().toLocaleTimeString(), text: "Failed to access webcam. Check browser permissions.", error: true },
             ...prev
           ]);
-          // Revert connection
           setSelectedCam(prev => ({ ...prev, status: "offline" }));
         }
       };
@@ -224,21 +243,22 @@ export default function LiveMonitoring() {
 
     let signal = "green";
     let signalTimer = 0;
+    let frameNumber = 0;
 
     // Simulated Bounding Boxes
     let vehicles = [
-      { id: 1, x: 50, y: 150, speed: 2.8, type: "Car", plate: "DL 3C AB 9081", color: "#3b82f6", width: 62, height: 35, violating: false },
-      { id: 2, x: 300, y: 240, speed: 1.8, type: "Truck", plate: "MH 12 RN 4567", color: "#64748b", width: 88, height: 46, violating: false },
-      { id: 3, x: 550, y: 190, speed: 2.2, type: "Auto", plate: "KA 05 XY 5678", color: "#f59e0b", width: 48, height: 32, violating: false }
+      { id: 1, x: 50, y: 150, speed: 2.8, type: "Car", plate: "DL 3C AB 9081", color: "#3b82f6", width: 62, height: 35, violating: false, isEmergency: false, isStolen: false },
+      { id: 2, x: 300, y: 240, speed: 1.8, type: "Truck", plate: "MH 12 RN 4567", color: "#64748b", width: 88, height: 46, violating: false, isEmergency: false, isStolen: false },
+      { id: 3, x: 550, y: 190, speed: 2.2, type: "Auto", plate: "KA 05 XY 5678", color: "#f59e0b", width: 48, height: 32, violating: false, isEmergency: false, isStolen: false }
     ];
 
     const drawLoop = () => {
+      frameNumber++;
+      
       // 1. Draw Stream Source
       if (selectedCam.stream_type === "webcam" && webcamVideoRef.current && webcamVideoRef.current.readyState >= 2) {
-        // Draw webcam frames onto canvas
         ctx.drawImage(webcamVideoRef.current, 0, 0, canvas.width, canvas.height);
       } else {
-        // Draw standard simulated highway background
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
@@ -266,7 +286,40 @@ export default function LiveMonitoring() {
         ctx.stroke();
       }
 
-      // 2. Traffic Signal simulator (drawn for both webcam and simulation models)
+      // --- Advanced Feature 1: Weather Rendering ---
+      if (weatherType === "rainy") {
+        ctx.strokeStyle = "rgba(174, 219, 255, 0.35)";
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 20; i++) {
+          const rx = (Math.random() * canvas.width + frameNumber * 3) % canvas.width;
+          const ry = Math.random() * canvas.height;
+          ctx.beginPath();
+          ctx.moveTo(rx, ry);
+          ctx.lineTo(rx - 5, ry + 15);
+          ctx.stroke();
+        }
+      } else if (weatherType === "foggy") {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // --- Advanced Feature 2: Road Damage Scanner ---
+      if (roadDamageScanner && selectedCam.stream_type === "simulated") {
+        ctx.strokeStyle = "#eab308";
+        ctx.lineWidth = 2.5;
+        // Draw simulated potholes on lanes
+        ctx.beginPath();
+        ctx.arc(220, 210, 14, 0, Math.PI * 2);
+        ctx.arc(480, 310, 18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(234, 179, 8, 0.2)";
+        ctx.fill();
+        ctx.fillStyle = "#eab308";
+        ctx.font = "bold 9px monospace";
+        ctx.fillText("STRUCTURAL HOLE [CRITICAL]", 240, 215);
+      }
+
+      // Signal Simulator
       signalTimer++;
       if (signalTimer > 250) {
         signal = signal === "green" ? "yellow" : signal === "yellow" ? "red" : "green";
@@ -292,9 +345,19 @@ export default function LiveMonitoring() {
       ctx.fillStyle = signal === "green" ? colors.green : "#1e293b";
       ctx.fill();
 
-      // 3. Draw Bounding Boxes overlay
+      // Trigger simulated accidents, stolen warnings, and emergency vehicles randomly
+      if (frameNumber % 400 === 0 && selectedCam.stream_type === "simulated") {
+        const triggers = [
+          () => { setIsAccidentAlert(true); setTimeout(() => setIsAccidentAlert(false), 5000); },
+          () => { setIsEmergencyAlert(true); setTimeout(() => setIsEmergencyAlert(false), 5000); },
+          () => { setIsFireAlert(true); setTimeout(() => setIsFireAlert(false), 5000); },
+          () => { setIsStolenAlert(true); setAlertPlate(vehicles[0].plate); setTimeout(() => setIsStolenAlert(false), 5000); }
+        ];
+        triggers[Math.floor(Math.random() * triggers.length)]();
+      }
+
+      // Draw Bounding Boxes
       if (selectedCam.stream_type === "webcam") {
-        // Draw mock webcam bounding boxes mapped to webcam centers (keeps HUD dynamic)
         const frameTime = performance.now();
         const cycle = Math.sin(frameTime / 2000) * 120;
         
@@ -305,14 +368,23 @@ export default function LiveMonitoring() {
         ctx.font = "bold 11px monospace";
         ctx.fillText("Person [Conf: 0.94] (0 km/h)", 200 + cycle, 112);
 
-        // Subplate mock over webcam
+        // Pedestrian Face Blur Privacy Mode
+        if (faceBlur) {
+          ctx.fillStyle = "rgba(100, 100, 100, 0.98)";
+          ctx.beginPath();
+          ctx.arc(290 + cycle, 165, 24, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 8px monospace";
+          ctx.fillText("PRIVACY BLUR", 260 + cycle, 168);
+        }
+
         ctx.strokeStyle = "#eab308";
         ctx.strokeRect(250 + cycle, 280, 80, 25);
-        ctx.fillStyle = "#eab308";
-        ctx.font = "bold 9px monospace";
-        ctx.fillText("DL 3C AB 9081", 250 + cycle, 275);
       } else {
-        // Draw vehicle coordinates movement for simulation
+        // Density calculation
+        setDensity(vehicles.length >= 3 ? "High" : vehicles.length >= 1 ? "Medium" : "Low");
+        
         vehicles.forEach((v) => {
           const checkLine = v.x + v.width > 550 && v.x < 595;
           if (signal === "red" && checkLine) {
@@ -328,25 +400,39 @@ export default function LiveMonitoring() {
             v.violating = false;
           }
 
-          // Bounding Box
-          const boxColor = v.violating ? "#ef4444" : "#10b981";
+          // Bounding Box color
+          let boxColor = v.violating ? "#ef4444" : "#10b981";
+          
+          if (isStolenAlert && v.id === 1) {
+            boxColor = "#a855f7"; // purple stolen pin
+            v.isStolen = true;
+          }
+          if (isEmergencyAlert && v.id === 3) {
+            boxColor = "#3b82f6"; // blue emergency pin
+            v.isEmergency = true;
+          }
+
           ctx.strokeStyle = boxColor;
           ctx.lineWidth = 2.5;
           ctx.strokeRect(v.x, v.y, v.width, v.height);
 
-          // Plate crop outline
-          ctx.strokeStyle = "#eab308";
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(v.x + v.width * 0.25, v.y + v.height * 0.7, v.width * 0.5, v.height * 0.2);
+          // Face blur on driver cockpit if active
+          if (faceBlur) {
+            ctx.fillStyle = "rgba(50,50,50,0.98)";
+            ctx.beginPath();
+            ctx.arc(v.x + v.width * 0.3, v.y + v.height * 0.4, 8, 0, Math.PI * 2);
+            ctx.fill();
+          }
 
           // Label
           ctx.fillStyle = boxColor;
-          ctx.font = "bold 10px monospace";
-          ctx.fillText(`${v.type.toUpperCase()} [Conf: 0.91] (${Math.round(v.speed * 25)} km/h)`, v.x, v.y - 7);
+          ctx.font = "bold 9px monospace";
+          const classTag = v.isStolen ? "STOLEN!" : v.isEmergency ? "EMERGENCY" : v.type.toUpperCase();
+          ctx.fillText(`${classTag} [Conf: 0.91] (${Math.round(v.speed * 25)} km/h)`, v.x, v.y - 7);
         });
       }
 
-      // 4. Calculate real-time FPS
+      // Calculate real-time FPS
       const now = performance.now();
       frameCountRef.current++;
       
@@ -358,7 +444,7 @@ export default function LiveMonitoring() {
       }
       
       // HUD Overlay details
-      ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
       ctx.fillRect(15, 15, 230, 80);
       ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
       ctx.strokeRect(15, 15, 230, 80);
@@ -366,9 +452,36 @@ export default function LiveMonitoring() {
       ctx.fillStyle = "#60a5fa";
       ctx.font = "bold 10px monospace";
       ctx.fillText(`CAM NODE: ${selectedCam.id}`, 25, 30);
-      ctx.fillText(`TYPE: ${selectedCam.stream_type.toUpperCase()}`, 25, 45);
-      ctx.fillText(`IP: ${selectedCam.ip_address}`, 25, 60);
+      ctx.fillText(`MODE: ${selectedCam.stream_type.toUpperCase()}`, 25, 45);
+      ctx.fillText(`WEATHER: ${weatherType.toUpperCase()}`, 25, 60);
       ctx.fillText(`FPS: ${fps} FPS`, 25, 75);
+
+      // Warning Alerts Overlay Banners on Canvas
+      if (isAccidentAlert) {
+        ctx.fillStyle = "rgba(239, 68, 68, 0.9)";
+        ctx.fillRect(15, canvas.height - 45, canvas.width - 30, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px monospace";
+        ctx.fillText("⚠️ CRITICAL ALARM: ACCIDENT SCENARIO DETECTED! HIGH HAZARD RADAR ALERT ACTIVE.", 30, canvas.height - 25);
+      } else if (isEmergencyAlert) {
+        ctx.fillStyle = "rgba(59, 130, 246, 0.9)";
+        ctx.fillRect(15, canvas.height - 45, canvas.width - 30, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px monospace";
+        ctx.fillText("🚨 DISPATCH ALARM: EMERGENCY PRIORITY VEHICLE DETECTED. LANE CLEARING DISPATCH ACTIVE.", 30, canvas.height - 25);
+      } else if (isFireAlert) {
+        ctx.fillStyle = "rgba(249, 115, 22, 0.9)";
+        ctx.fillRect(15, canvas.height - 45, canvas.width - 30, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px monospace";
+        ctx.fillText("🔥 FIRE HAZARD WARNING: THERMAL SMOKE/FIRE SPIKE DETECTED. ALARM SENT.", 30, canvas.height - 25);
+      } else if (isStolenAlert) {
+        ctx.fillStyle = "rgba(168, 85, 247, 0.9)";
+        ctx.fillRect(15, canvas.height - 45, canvas.width - 30, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px monospace";
+        ctx.fillText(`🚨 STOLEN VEHICLE DETECTED (PLATE: ${alertPlate})! DISPATCHING CRUISERS.`, 30, canvas.height - 25);
+      }
 
       animationRef.current = requestAnimationFrame(drawLoop);
     };
@@ -378,7 +491,7 @@ export default function LiveMonitoring() {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [selectedCam.id, selectedCam.status, selectedCam.stream_type, showLanes, fps]);
+  }, [selectedCam.id, selectedCam.status, selectedCam.stream_type, showLanes, fps, faceBlur, roadDamageScanner, weatherType, isAccidentAlert, isEmergencyAlert, isFireAlert, isStolenAlert]);
 
   // Handle adding new custom camera link
   const handleAddCamera = (e: React.FormEvent) => {
@@ -403,20 +516,13 @@ export default function LiveMonitoring() {
     setSelectedCam(newStream);
     setIsAddOpen(false);
 
-    // Reset fields
     setNewCamName("");
     setNewCamLoc("");
     setNewCamType("simulated");
     setNewCamIp("");
     setNewCamRtsp("");
-
-    setLogs((prev) => [
-      { time: new Date().toLocaleTimeString(), text: `Configured new CCTV camera node ${newId} (${newCamName}).` },
-      ...prev
-    ]);
   };
 
-  // Toggle Camera Status Online/Offline
   const toggleCameraLink = () => {
     setCameras((prev) =>
       prev.map((c) => {
@@ -430,7 +536,6 @@ export default function LiveMonitoring() {
     );
   };
 
-  // Filter cameras based on search and status
   const filteredCams = cameras.filter((c) => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -570,7 +675,7 @@ export default function LiveMonitoring() {
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">CCTV Command Room</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-            Manage RTSP networks, local webcams, and view live YOLO bounding boxes.
+            Manage RTSP networks, local webcams, and run advanced AI target models.
           </p>
         </div>
 
@@ -637,7 +742,7 @@ export default function LiveMonitoring() {
                         ) : (
                           <CameraIcon size={12} className="text-blue-400" />
                         )}
-                        <span className="text-[9px] font-bold text-slate-450 uppercase">{cam.id}</span>
+                        <span className="text-[9px] font-bold text-slate-455 uppercase">{cam.id}</span>
                       </div>
                       <div className="flex items-center gap-1 text-[9px] font-bold">
                         <span className={`h-1.5 w-1.5 rounded-full ${cam.status === "online" ? "bg-emerald-500" : "bg-red-500"}`} />
@@ -653,141 +758,231 @@ export default function LiveMonitoring() {
                       </span>
                     </div>
                   </div>
-
-                  {/* Diagnostic details */}
-                  <div className="grid grid-cols-3 gap-1 text-[8px] font-extrabold border-t border-slate-150/30 dark:border-slate-855/40 pt-2 text-slate-500">
-                    <div>
-                      <span className="block uppercase text-slate-400">Flow</span>
-                      <span className="text-slate-800 dark:text-slate-200">{cam.vehicles_count}</span>
-                    </div>
-                    <div>
-                      <span className="block uppercase text-slate-400">Incidents</span>
-                      <span className={cam.violations_count > 0 ? "text-red-500" : "text-slate-850 dark:text-slate-200"}>
-                        {cam.violations_count}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block uppercase text-slate-400">Health</span>
-                      <span className={
-                        cam.health === "good" ? "text-emerald-500" : cam.health === "warning" ? "text-amber-500" : "text-red-500"
-                      }>
-                        {cam.health.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Right Side: Monitor canvas panel & logs */}
+        {/* Center/Right Side: Monitor canvas panel & logs */}
         <div className="xl:col-span-3 space-y-6">
-          <Card className="glass-card p-4 overflow-hidden border-slate-200/50 dark:border-slate-800/50 shadow-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Monitor Screen Frame */}
-            <div className="relative">
-              {selectedCam.status === "online" ? (
-                <canvas
-                  ref={isFullscreen ? null : canvasRef}
-                  className="w-full aspect-video rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-950"
-                />
-              ) : (
-                <div className="w-full aspect-video rounded-xl bg-slate-950 border border-slate-900 flex flex-col items-center justify-center text-center p-6 gap-3">
-                  <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 animate-pulse">
-                    <VideoOff size={22} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-xs">CCTV Stream Offline</h3>
-                    <p className="text-[10px] text-slate-500 max-w-xs mt-1">
-                      Signal timed out for sensor {selectedCam.id}. Verify IP port link credentials.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Status Tags */}
-              <div className="absolute top-4 right-4 flex gap-1.5 z-20">
-                <Badge className="bg-black/60 border border-white/10 hover:bg-black/60 flex items-center gap-1.5 py-1 text-[9px] font-bold text-white">
-                  <Radio size={10} className={`text-red-500 ${selectedCam.status === 'online' ? 'animate-ping' : ''}`} />
-                  {selectedCam.status === "online" ? "LIVE INFRASTRUCTURE" : "CONNECTION LOST"}
-                </Badge>
+            <div className="lg:col-span-2 space-y-4">
+              <Card className="glass-card p-4 overflow-hidden border-slate-200/50 dark:border-slate-800/50 shadow-lg">
                 
-                {selectedCam.status === "online" && (
-                  <Button
-                    onClick={() => setIsFullscreen(true)}
-                    variant="secondary"
-                    className="bg-black/60 hover:bg-black/80 text-white border border-white/10 h-6 px-2 text-[9px] font-bold"
-                  >
-                    <Maximize2 size={10} className="mr-1" /> Fullscreen
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Viewport Control Panel */}
-            <div className="flex flex-wrap items-center justify-between mt-3 pt-3 border-t border-slate-200/40 dark:border-slate-850/40 gap-4 text-xs font-bold">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-400">Check:</span>
-                  <Badge variant={selectedCam.health === "good" ? "success" : selectedCam.health === "warning" ? "secondary" : "destructive"}>
-                    {selectedCam.health.toUpperCase()}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-bold">Connection:</span>
-                  <Button
-                    variant={selectedCam.status === "online" ? "destructive" : "default"}
-                    size="sm"
-                    onClick={toggleCameraLink}
-                    className="h-7 text-[9px] px-2.5 font-bold"
-                  >
-                    {selectedCam.status === "online" ? "Disconnect" : "Connect"}
-                  </Button>
-                </div>
-              </div>
-
-              {selectedCam.status === "online" && (
-                <div className="flex items-center gap-2">
-                  {selectedCam.stream_type === "simulated" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowLanes(!showLanes)}
-                      className="h-7 text-[9px] font-bold"
-                    >
-                      {showLanes ? "Hide Lanes" : "Lanes Overlay"}
-                    </Button>
+                <div className="relative">
+                  {selectedCam.status === "online" ? (
+                    <canvas
+                      ref={isFullscreen ? null : canvasRef}
+                      className="w-full aspect-video rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-950 transition-all duration-300"
+                      style={nightVision ? { filter: "hue-rotate(90deg) brightness(1.2) contrast(1.5) saturate(1.2)" } : {}}
+                    />
+                  ) : (
+                    <div className="w-full aspect-video rounded-xl bg-slate-950 border border-slate-900 flex flex-col items-center justify-center text-center p-6 gap-3">
+                      <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 animate-pulse">
+                        <VideoOff size={22} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-xs">CCTV Stream Offline</h3>
+                        <p className="text-[10px] text-slate-500 max-w-xs mt-1">
+                          Signal timed out for sensor {selectedCam.id}. Verify IP port link credentials.
+                        </p>
+                      </div>
+                    </div>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => alert(`Saved camera snapshot clip for node ${selectedCam.id}`)}
-                    className="h-7 text-[9px] font-bold"
-                  >
-                    Snapshot
-                  </Button>
-                </div>
-              )}
-            </div>
-          </Card>
 
-          {/* CCTV Diagnostic logs */}
-          <Card className="glass-card p-5 space-y-4">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-450 flex items-center gap-1.5">
-              <Clock size={16} className="text-blue-500" />
-              Live Telemetry Logs ({selectedCam.id})
-            </CardTitle>
-            <div className="h-32 overflow-y-auto font-mono text-[9px] leading-relaxed space-y-1.5 p-3 rounded-xl bg-slate-900/60 dark:bg-slate-950/60 border border-slate-300/10">
-              {logs.map((log, idx) => (
-                <div key={idx} className={`flex gap-3 ${log.error ? "text-red-400 font-bold" : "text-slate-350"}`}>
-                  <span className="text-slate-500 shrink-0">[{log.time}]</span>
-                  <span>{log.text}</span>
+                  {/* Status Tags */}
+                  <div className="absolute top-4 right-4 flex gap-1.5 z-20">
+                    <Badge className="bg-black/60 border border-white/10 hover:bg-black/60 flex items-center gap-1.5 py-1 text-[9px] font-bold text-white">
+                      <Radio size={10} className={`text-red-500 ${selectedCam.status === 'online' ? 'animate-ping' : ''}`} />
+                      {selectedCam.status === "online" ? "LIVE INFRASTRUCTURE" : "CONNECTION LOST"}
+                    </Badge>
+                    
+                    {selectedCam.status === "online" && (
+                      <Button
+                        onClick={() => setIsFullscreen(true)}
+                        variant="secondary"
+                        className="bg-black/60 hover:bg-black/80 text-white border border-white/10 h-6 px-2 text-[9px] font-bold"
+                      >
+                        <Maximize2 size={10} className="mr-1" /> Fullscreen
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              ))}
+
+                {/* Viewport Control Panel */}
+                <div className="flex flex-wrap items-center justify-between mt-3 pt-3 border-t border-slate-200/40 dark:border-slate-850/40 gap-4 text-xs font-bold">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-400">Status:</span>
+                      <Badge variant={selectedCam.health === "good" ? "success" : selectedCam.health === "warning" ? "secondary" : "destructive"}>
+                        {selectedCam.health.toUpperCase()}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 font-bold">Connection:</span>
+                      <Button
+                        variant={selectedCam.status === "online" ? "destructive" : "default"}
+                        size="sm"
+                        onClick={toggleCameraLink}
+                        className="h-7 text-[9px] px-2.5 font-bold"
+                      >
+                        {selectedCam.status === "online" ? "Disconnect" : "Connect"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {selectedCam.status === "online" && (
+                    <div className="flex items-center gap-2">
+                      {selectedCam.stream_type === "simulated" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowLanes(!showLanes)}
+                          className="h-7 text-[9px] font-bold"
+                        >
+                          {showLanes ? "Hide Lanes" : "Lanes Overlay"}
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => alert(`Saved camera snapshot clip for node ${selectedCam.id}`)}
+                        className="h-7 text-[9px] font-bold"
+                      >
+                        Snapshot
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* CCTV Diagnostic logs */}
+              <Card className="glass-card p-5 space-y-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-450 flex items-center gap-1.5">
+                  <Clock size={16} className="text-blue-500" />
+                  Live Telemetry Logs ({selectedCam.id})
+                </CardTitle>
+                <div className="h-32 overflow-y-auto font-mono text-[9px] leading-relaxed space-y-1.5 p-3 rounded-xl bg-slate-900/60 dark:bg-slate-950/60 border border-slate-300/10">
+                  {logs.map((log, idx) => (
+                    <div key={idx} className={`flex gap-3 ${log.error ? "text-red-400 font-bold" : "text-slate-350"}`}>
+                      <span className="text-slate-500 shrink-0">[{log.time}]</span>
+                      <span>{log.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </div>
-          </Card>
+
+            {/* Right Side: Advanced AI Tuning Controls */}
+            <div className="space-y-6">
+              <Card className="glass-card p-5 space-y-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <SlidersHorizontal size={14} className="text-blue-500" />
+                  Advanced AI Scanner Tools
+                </CardTitle>
+
+                <div className="space-y-3.5 text-xs font-semibold">
+                  
+                  {/* Face Blur Toggle */}
+                  <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-850/40 pb-2.5">
+                    <div>
+                      <span className="block font-bold">Face Blur Anonymize</span>
+                      <span className="text-[8px] text-slate-400">Blur pedestrian cockpit faces</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={faceBlur}
+                      onChange={() => setFaceBlur(!faceBlur)}
+                      className="rounded bg-slate-950 border-slate-700 h-4 w-4 accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Night Vision Toggle */}
+                  <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-850/40 pb-2.5">
+                    <div>
+                      <span className="block font-bold">Night Vision Mode</span>
+                      <span className="text-[8px] text-slate-400">Activate thermal lens overlay</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={nightVision}
+                      onChange={() => setNightVision(!nightVision)}
+                      className="rounded bg-slate-950 border-slate-700 h-4 w-4 accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Road Damage Toggle */}
+                  <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-850/40 pb-2.5">
+                    <div>
+                      <span className="block font-bold">Road Damage Scanner</span>
+                      <span className="text-[8px] text-slate-400">Trak cracks / potholes</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={roadDamageScanner}
+                      onChange={() => setRoadDamageScanner(!roadDamageScanner)}
+                      className="rounded bg-slate-950 border-slate-700 h-4 w-4 accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Weather Sensor Dropdown */}
+                  <div className="space-y-1 border-b border-slate-200/40 dark:border-slate-850/40 pb-3">
+                    <label className="text-[8px] font-bold text-slate-400 uppercase block">Weather Sensor Matrix</label>
+                    <Select
+                      value={weatherType}
+                      onChange={(e: any) => setWeatherType(e.target.value)}
+                      className="h-8 text-[10px]"
+                    >
+                      <option value="sunny">Sunny (Clear Sky)</option>
+                      <option value="rainy">Rainy (Precipitation)</option>
+                      <option value="foggy">Foggy (Mist/Smog)</option>
+                    </Select>
+                  </div>
+
+                  {/* Density badge status */}
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400">Traffic Density</span>
+                    <Badge variant={density === 'High' ? 'destructive' : 'success'}>
+                      {density}
+                    </Badge>
+                  </div>
+
+                </div>
+              </Card>
+
+              {/* Class Vehicle Counting Card */}
+              <Card className="glass-card p-5 space-y-3">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Car size={15} className="text-blue-500" />
+                  Vehicle Classification Counts
+                </CardTitle>
+
+                <div className="grid grid-cols-2 gap-3 text-xs font-semibold">
+                  <div className="p-2.5 rounded-xl border border-slate-200/40 dark:border-slate-800/40 text-center">
+                    <span className="text-[8.5px] text-slate-400 block font-bold uppercase">Cars</span>
+                    <strong className="text-sm">{counts.car}</strong>
+                  </div>
+                  <div className="p-2.5 rounded-xl border border-slate-200/40 dark:border-slate-800/40 text-center">
+                    <span className="text-[8.5px] text-slate-400 block font-bold uppercase">Motorcycles</span>
+                    <strong className="text-sm">{counts.motorcycle}</strong>
+                  </div>
+                  <div className="p-2.5 rounded-xl border border-slate-200/40 dark:border-slate-800/40 text-center">
+                    <span className="text-[8.5px] text-slate-400 block font-bold uppercase">Trucks/Buses</span>
+                    <strong className="text-sm">{counts.truck + counts.bus}</strong>
+                  </div>
+                  <div className="p-2.5 rounded-xl border border-slate-200/40 dark:border-slate-800/40 text-center">
+                    <span className="text-[8.5px] text-slate-400 block font-bold uppercase">Auto Rickshaws</span>
+                    <strong className="text-sm">{counts.auto}</strong>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+          </div>
         </div>
 
       </div>
