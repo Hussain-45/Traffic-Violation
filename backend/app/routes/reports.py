@@ -16,6 +16,7 @@ class ReportCreate(BaseModel):
     report_type: str  # violations, revenue, analytics
     start_date: datetime.datetime
     end_date: datetime.datetime
+    file_format: Optional[str] = "csv" # csv, xlsx, pdf
 
 class ReportOut(BaseModel):
     id: int
@@ -35,7 +36,7 @@ def get_reports(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(Report).all()
+    return db.query(Report).order_by(Report.created_at.desc()).all()
 
 @router.get("/{report_id}", response_model=ReportOut)
 def get_report(
@@ -54,6 +55,8 @@ def generate_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    import pandas as pd
+    
     # Ensure directory exists
     report_dir = os.path.join("data", "reports")
     os.makedirs(report_dir, exist_ok=True)
@@ -66,25 +69,42 @@ def generate_report(
 
     # Generate filename
     timestamp_str = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    filename = f"report_{payload.report_type}_{timestamp_str}.csv"
+    
+    if payload.file_format == "xlsx":
+        filename = f"report_{payload.report_type}_{timestamp_str}.xlsx"
+    elif payload.file_format == "pdf":
+        filename = f"report_{payload.report_type}_{timestamp_str}.pdf"
+    else:
+        filename = f"report_{payload.report_type}_{timestamp_str}.csv"
+        
     file_path = os.path.join(report_dir, filename)
 
     try:
-        # Write to CSV
-        with open(file_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Violation ID", "Vehicle ID", "Camera ID", "Type", "Timestamp", "Location", "Fine", "Status", "Confidence"])
-            for v in violations:
-                writer.writerow([
-                    v.id, v.vehicle_id, v.camera_id, v.type,
-                    v.timestamp.isoformat(), v.location, v.fine_amount,
-                    v.status, v.confidence_score
-                ])
+        # Construct DataFrame
+        data = []
+        for v in violations:
+            data.append({
+                "Violation ID": v.id,
+                "Vehicle ID": v.vehicle_id,
+                "Camera ID": v.camera_id,
+                "Violation Type": v.type,
+                "Timestamp": v.timestamp.isoformat(),
+                "Location": v.location,
+                "Fine Amount": v.fine_amount,
+                "Status": v.status,
+                "Confidence Score": v.confidence_score
+            })
+            
+        df = pd.DataFrame(data)
+        
+        if payload.file_format == "xlsx":
+            df.to_excel(file_path, index=False)
+        else:
+            df.to_csv(file_path, index=False, encoding="utf-8")
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate report file: {e}")
 
-    # Save to db
-    # In FastAPI, we can expose the reports statically via app.mount("/data")
     static_url = f"/data/reports/{filename}"
 
     rep = Report(

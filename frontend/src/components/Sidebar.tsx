@@ -13,7 +13,9 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  IndianRupee
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -33,6 +35,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     { name: "Violations", path: "/violations", icon: AlertTriangle },
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
     { name: "Heatmap Map", path: "/map", icon: MapIcon },
+    { name: "Reports Desk", path: "/reports", icon: FileText },
+    { name: "Fine Management", path: "/fines", icon: IndianRupee },
     { name: "CCTV Cameras", path: "/cameras", icon: Camera },
     { name: "User Management", path: "/users", icon: Users, adminOnly: true },
     { name: "System Settings", path: "/settings", icon: SettingsIcon },

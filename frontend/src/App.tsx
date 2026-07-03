@@ -12,6 +12,8 @@ import Map from "./pages/Map";
 import Cameras from "./pages/Cameras";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import Reports from "./pages/Reports";
+import FineManagement from "./pages/FineManagement";
 
 // TypeScript Interfaces for Global Contexts
 export interface UserProfile {
@@ -245,6 +247,26 @@ export default function App() {
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Settings />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Reports />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/fines"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <FineManagement />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
