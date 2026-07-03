@@ -69,6 +69,11 @@ def get_violations(
     status: Optional[str] = None,
     plate: Optional[str] = None,
     camera_id: Optional[str] = None,
+    start_date: Optional[datetime.datetime] = None,
+    end_date: Optional[datetime.datetime] = None,
+    officer_notes: Optional[str] = None,
+    sort_by: Optional[str] = "timestamp",
+    sort_order: Optional[str] = "desc",
     current_user: User = Depends(get_current_user)
 ):
     query = db.query(Violation).join(Vehicle).join(Camera)
@@ -85,12 +90,33 @@ def get_violations(
         filters.append(Violation.camera_id == camera_id)
     if plate:
         filters.append(Vehicle.license_plate.ilike(f"%{plate}%"))
+    if start_date:
+        filters.append(Violation.timestamp >= start_date)
+    if end_date:
+        filters.append(Violation.timestamp <= end_date)
+    if officer_notes:
+        filters.append(Violation.officer_notes.ilike(f"%{officer_notes}%"))
         
     if filters:
         query = query.filter(and_(*filters))
         
     total = query.count()
-    violations = query.order_by(desc(Violation.timestamp)).offset(skip).limit(limit).all()
+    
+    # Dynamic Sorting
+    order_column = Violation.timestamp
+    if sort_by == "fine_amount":
+        order_column = Violation.fine_amount
+    elif sort_by == "confidence_score":
+        order_column = Violation.confidence_score
+    elif sort_by == "id":
+        order_column = Violation.id
+        
+    if sort_order == "asc":
+        query = query.order_by(order_column.asc())
+    else:
+        query = query.order_by(order_column.desc())
+        
+    violations = query.offset(skip).limit(limit).all()
     
     return {
         "total": total,

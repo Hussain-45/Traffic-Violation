@@ -20,7 +20,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Printer,
-  X
+  X,
+  SlidersHorizontal,
+  ArrowUpDown,
+  FileText
 } from "lucide-react";
 
 interface VehicleProfile {
@@ -64,11 +67,10 @@ const VIOLATION_LABELS: { [key: string]: string } = {
   triple_riding: "Triple Riding",
   mobile_usage: "Using Mobile",
   illegal_parking: "Illegal Parking",
-  against_traffic: "Driving Against Traffic",
+  against_traffic: "Wrong Direction",
   stop_line_crossing: "Stop Line Crossing"
 };
 
-// Fallback mock items
 const fallbackViolations: ViolationItem[] = [
   {
     id: 102,
@@ -97,20 +99,6 @@ const fallbackViolations: ViolationItem[] = [
     officer_notes: "Checked registration parameters.",
     vehicle: { license_plate: "MH 12 RN 4567", type: "car", brand: "Toyota Fortuner", color: "White", owner_name: "Priya Patel", status: "valid" },
     camera: { id: "CAM-002", name: "India Gate Ring Road", location: "Rajpath Circular" }
-  },
-  {
-    id: 100,
-    vehicle_id: 3,
-    camera_id: "CAM-003",
-    type: "no_helmet",
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
-    location: "Rajouri Garden, New Delhi",
-    fine_amount: 500,
-    status: "pending",
-    confidence_score: 0.88,
-    officer_notes: "Auto-detected by AI system.",
-    vehicle: { license_plate: "KA 05 XY 5678", type: "motorcycle", brand: "Royal Enfield", color: "Black", owner_name: "Rajesh Kumar", status: "expired" },
-    camera: { id: "CAM-003", name: "Rajouri Garden Flyover", location: "Rajouri Garden" }
   }
 ];
 
@@ -121,10 +109,24 @@ export default function Violations() {
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Filters
+  // Search Fields
   const [searchPlate, setSearchPlate] = useState<string>("");
+  const [searchLocation, setSearchLocation] = useState<string>("");
+  const [searchCameraId, setSearchCameraId] = useState<string>("");
+  const [searchOfficerNotes, setSearchOfficerNotes] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  
+  // Categorical Filters
   const [filterType, setFilterType] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("");
+
+  // Sorting
+  const [sortColumn, setSortColumn] = useState<string>("timestamp");
+  const [sortDirection, setSortDirection] = useState<string>("desc");
+
+  // Filter drawer toggle
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
   // Pagination
   const [page, setPage] = useState<number>(1);
@@ -142,9 +144,20 @@ export default function Violations() {
       const skip = (page - 1) * limit;
       let url = `${API_BASE_URL}/violations?skip=${skip}&limit=${limit}`;
 
+      // Append search fields
       if (searchPlate) url += `&plate=${searchPlate}`;
+      if (searchLocation) url += `&location=${searchLocation}`;
+      if (searchCameraId) url += `&camera_id=${searchCameraId}`;
+      if (searchOfficerNotes) url += `&officer_notes=${searchOfficerNotes}`;
+      if (startDate) url += `&start_date=${new Date(startDate).toISOString()}`;
+      if (endDate) url += `&end_date=${new Date(endDate).toISOString()}`;
+      
+      // Categorical
       if (filterType) url += `&type=${filterType}`;
       if (filterStatus) url += `&status=${filterStatus}`;
+
+      // Sorting
+      url += `&sort_by=${sortColumn}&sort_order=${sortDirection}`;
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -157,7 +170,7 @@ export default function Violations() {
         throw new Error("API Offline");
       }
     } catch (err) {
-      console.warn("Using offline violations datagrid.");
+      console.warn("Using offline violations database datagrid.");
       setViolations(fallbackViolations);
       setTotal(fallbackViolations.length);
     } finally {
@@ -167,7 +180,19 @@ export default function Violations() {
 
   useEffect(() => {
     fetchViolations();
-  }, [page, searchPlate, filterType, filterStatus]);
+  }, [
+    page,
+    searchPlate,
+    searchLocation,
+    searchCameraId,
+    searchOfficerNotes,
+    startDate,
+    endDate,
+    filterType,
+    filterStatus,
+    sortColumn,
+    sortDirection
+  ]);
 
   const handleSelectViolation = (viol: ViolationItem) => {
     setSelectedViol(viol);
@@ -208,19 +233,160 @@ export default function Violations() {
     }
   };
 
+  const clearAllFilters = () => {
+    setSearchPlate("");
+    setSearchLocation("");
+    setSearchCameraId("");
+    setSearchOfficerNotes("");
+    setStartDate("");
+    setEndDate("");
+    setFilterType("");
+    setFilterStatus("");
+    setSortColumn("timestamp");
+    setSortDirection("desc");
+    setPage(1);
+  };
+
   const totalPages = Math.ceil(total / limit);
 
   return (
     <div className="space-y-6">
+      
       {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">Violations Repository</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Database of auto-detected vehicle violations. Manage challan states and resolve logs.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">Violations Registry</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+            Query the Smart City database, filter challans, and update case notes.
+          </p>
+        </div>
+
+        <Button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          variant="outline"
+          size="sm"
+          className="text-[10px] h-9 font-bold"
+        >
+          <SlidersHorizontal size={12} className="mr-1.5" />
+          {showAdvanced ? "Hide Advanced Search" : "Advanced Search"}
+        </Button>
       </div>
 
-      {/* Searching filters */}
+      {/* Expandable Advanced Search options */}
+      <AnimatePresence>
+        {showAdvanced && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <Card className="glass-card p-5 space-y-4 border-slate-200/50 dark:border-slate-800/60 shadow-md">
+              <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-slate-850/40 pb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Advanced Filter Fields</span>
+                <Button variant="ghost" onClick={clearAllFilters} className="text-[9px] h-6 font-bold text-red-500 hover:bg-red-500/10">
+                  Reset Search
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 text-xs font-semibold">
+                
+                {/* 1. Location */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Location Landmark</label>
+                  <div className="relative">
+                    <MapPin size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                    <Input
+                      value={searchLocation}
+                      onChange={(e) => { setSearchLocation(e.target.value); setPage(1); }}
+                      placeholder="e.g. Connaught Place"
+                      className="pl-8 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Camera ID */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Camera Node ID</label>
+                  <div className="relative">
+                    <Camera size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                    <Input
+                      value={searchCameraId}
+                      onChange={(e) => { setSearchCameraId(e.target.value); setPage(1); }}
+                      placeholder="e.g. CAM-001"
+                      className="pl-8 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Start Date */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-450 uppercase">Start Date</label>
+                  <div className="relative">
+                    <Calendar size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                    <Input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                      className="pl-8 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. End Date */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-455 uppercase">End Date</label>
+                  <div className="relative">
+                    <Calendar size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                    <Input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                      className="pl-8 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Officer Notes / Notes */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-455 uppercase">Officer / Verification Remarks</label>
+                  <div className="relative">
+                    <FileText size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                    <Input
+                      value={searchOfficerNotes}
+                      onChange={(e) => { setSearchOfficerNotes(e.target.value); setPage(1); }}
+                      placeholder="e.g. AI-detected"
+                      className="pl-8 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 6. Sorting Column */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-455 uppercase">Sort Column</label>
+                  <Select value={sortColumn} onChange={(e) => setSortColumn(e.target.value)} className="h-9">
+                    <option value="timestamp">Timestamp</option>
+                    <option value="fine_amount">Fine Tariff</option>
+                    <option value="confidence_score">Confidence Score</option>
+                    <option value="id">Incident ID</option>
+                  </Select>
+                </div>
+
+                {/* 7. Sorting Order */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-455 uppercase">Sort Direction</label>
+                  <Select value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} className="h-9">
+                    <option value="desc">Descending (Newest First)</option>
+                    <option value="asc">Ascending (Oldest First)</option>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Search Panel */}
       <Card className="glass-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
         <div className="relative w-full md:w-64">
           <Search size={14} className="absolute left-3 top-3 text-slate-400" />
@@ -233,7 +399,7 @@ export default function Violations() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
           <Select
             value={filterType}
             onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
@@ -258,7 +424,7 @@ export default function Violations() {
         </div>
       </Card>
 
-      {/* Table grid */}
+      {/* Grid of Results */}
       <Card className="glass-card shadow-sm overflow-hidden p-0">
         <Table>
           <TableHeader>
@@ -290,7 +456,7 @@ export default function Violations() {
             ) : violations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-10 text-slate-400 font-bold">
-                  No incident records found.
+                  No incident records found. Refine your filters.
                 </TableCell>
               </TableRow>
             ) : (
@@ -313,7 +479,7 @@ export default function Violations() {
                     {new Date(v.timestamp).toLocaleString()}
                   </TableCell>
                   <TableCell className="font-extrabold text-slate-800 dark:text-slate-100">
-                    ₹{v.fine_amount}
+                    ₹{v.fine_amount.toLocaleString()}
                   </TableCell>
                   <TableCell>
                     <Badge variant={v.status === "paid" ? "success" : v.status === "resolved" ? "secondary" : "destructive"}>
@@ -369,7 +535,7 @@ export default function Violations() {
         )}
       </Card>
 
-      {/* Detail drawer overlay */}
+      {/* Audit Detail Drawer */}
       <AnimatePresence>
         {selectedViol && (
           <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm p-4">
@@ -381,7 +547,7 @@ export default function Violations() {
               className="glass-panel w-full max-w-lg h-full rounded-l-3xl shadow-2xl p-6 border-l border-white/10 overflow-y-auto space-y-6 flex flex-col justify-between"
             >
               <div>
-                {/* Header */}
+                {/* Drawer Header */}
                 <div className="flex justify-between items-start border-b border-slate-200/40 dark:border-slate-800/40 pb-4">
                   <div>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Incident Details</span>
@@ -398,25 +564,32 @@ export default function Violations() {
                   </button>
                 </div>
 
-                {/* Media Bbox Mock */}
+                {/* Crop view */}
                 <div className="mt-5 space-y-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">AI Inference crop</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">AI Bounding Box crop</span>
                   <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 aspect-video flex items-center justify-center">
                     <img
-                      src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=400&q=80"
+                      src={selectedViol.evidence_image_path ? `${API_BASE_URL}/${selectedViol.evidence_image_path.replace(/\\/g, '/')}` : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=400&q=80"}
                       alt="Telemetry Crop"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover animate-fade-in"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=400&q=80";
+                      }}
                     />
                   </div>
                 </div>
 
-                {/* Info grids */}
+                {/* Specification Grid */}
                 <div className="grid grid-cols-2 gap-4 mt-5">
                   <div className="p-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 space-y-1.5 text-xs font-semibold">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Vehicle specs</span>
                     <div className="flex justify-between">
                       <span className="text-slate-450">Plate:</span>
                       <strong className="text-blue-500 font-extrabold">{selectedViol.vehicle.license_plate}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">Class:</span>
+                      <strong className="text-slate-700 dark:text-slate-250 capitalize font-bold">{selectedViol.vehicle.type}</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-450">Color/Brand:</span>
@@ -429,14 +602,14 @@ export default function Violations() {
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/40 space-y-1.5 text-xs font-semibold">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Violation tele</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Violation telemetry</span>
                     <div className="flex justify-between">
                       <span className="text-slate-450">Offence:</span>
                       <strong className="text-red-500 font-bold capitalize">{VIOLATION_LABELS[selectedViol.type] || selectedViol.type}</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-450">Fine Tariff:</span>
-                      <strong className="text-slate-800 dark:text-slate-200">₹{selectedViol.fine_amount}</strong>
+                      <strong className="text-slate-800 dark:text-slate-200">₹{selectedViol.fine_amount.toLocaleString()}</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-450">AI Conf:</span>
@@ -484,7 +657,7 @@ export default function Violations() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full text-xs flex items-center justify-center gap-1.5"
+                      className="w-full text-xs flex items-center justify-center gap-1.5 h-9"
                       onClick={() => window.print()}
                     >
                       <Printer size={14} />
@@ -504,7 +677,7 @@ export default function Violations() {
                   />
                 </div>
 
-                <Button type="submit" disabled={updating} className="w-full py-3 text-xs">
+                <Button type="submit" disabled={updating} className="w-full py-3 text-xs h-10 font-bold">
                   {updating ? "Saving Changes..." : "Save Audit Status"}
                 </Button>
               </form>
