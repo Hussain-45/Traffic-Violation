@@ -1,0 +1,3 @@
+# Sequence Diagrams
+
+Placeholder documentation.

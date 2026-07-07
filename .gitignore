@@ -37,3 +37,13 @@ db_data/
 .agents/
 brain/
 scratch/
+
+# Datasets and operational data caches
+datasets/
+data/
+logs/
+*.db
+*.sqlite
+yolov8n.pt
+stvds_backend.log
+

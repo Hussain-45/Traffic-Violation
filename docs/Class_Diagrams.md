@@ -1,0 +1,3 @@
+# Class Diagrams
+
+Placeholder documentation.
