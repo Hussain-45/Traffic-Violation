@@ -1,71 +1,198 @@
 """
-Report Template Service Layer
-=============================
-Standardizes structural text layouts, cover pages, statistics tables,
-and footer indicators for PDF/Text compiled reports.
+Decoupled Template Engine
+=========================
+Separates report templates into modular strategy classes.
+Future templates can be added by implementing BaseReportTemplate without modifying ReportService.
 """
 from typing import Dict, Any, List
+from abc import ABC, abstractmethod
 import datetime
+
+
+class BaseReportTemplate(ABC):
+    """
+    Abstract base class defining layout structure methods for report templates.
+    """
+
+    @property
+    @abstractmethod
+    def template_id(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def description(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def supported_formats(self) -> List[str]:
+        pass
+
+    @property
+    @abstractmethod
+    def parameters(self) -> List[str]:
+        pass
+
+    @abstractmethod
+    def render(self, title: str, start: str, end: str, kpis: Dict[str, Any], violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        """Renders the text layout for the template."""
+        pass
+
+
+class ExecutiveTemplate(BaseReportTemplate):
+    template_id = "executive_report"
+    name = "Executive Summary Report"
+    description = "High-level summary of total scanned vehicles, flagged violations, and assessed fines."
+    supported_formats = ["pdf", "csv", "xlsx", "json"]
+    parameters = ["start_date", "end_date"]
+
+    def render(self, title: str, start: str, end: str, kpis: Dict[str, Any], violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        line = "=" * 75
+        now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        return f"""
+{line}
+                  EXECUTIVE SUMMARY COMPLIANCE REPORT
+{line}
+TITLE             : {title}
+DATE RANGE        : {start} to {end}
+GENERATED AT      : {now_str} UTC
+---------------------------------------------------------------------------
+Total Violations  : {kpis.get('total_violations', 0)}
+Total Fines       : INR {kpis.get('total_fines', 0.0):.2f}
+Database Status   : {kpis.get('db_health', 'healthy').upper()}
+{line}
+"""
+
+
+class ViolationTemplate(BaseReportTemplate):
+    template_id = "violation_report"
+    name = "Detailed Violation Audit"
+    description = "Detailed list of violation counts categorized by cameras and type classifications."
+    supported_formats = ["pdf", "csv", "json"]
+    parameters = ["start_date", "end_date", "violation_type"]
+
+    def render(self, title: str, start: str, end: str, kpis: Dict[str, Any], violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        line = "=" * 75
+        now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        lines = [
+            line,
+            f"                  DETAILED VIOLATION REPORT: {title}",
+            line,
+            f"RANGE             : {start} to {end}",
+            f"GENERATED         : {now_str} UTC",
+            "---------------------------------------------------------------------------",
+            f"{'Violation Category':<45} | {'Count':<10}",
+            "---------------------------------------------------------------------------"
+        ]
+        for v in violations:
+            lines.append(f"{v['name']:<45} | {v['value']:<10}")
+        lines.append(line)
+        return "\n".join(lines) + "\n"
+
+
+class AnalyticsTemplate(BaseReportTemplate):
+    template_id = "analytics_report"
+    name = "Weekly Traffic Analytics Trends"
+    description = "Weekly breakdown of traffic flows, vehicle classes, and camera performance averages."
+    supported_formats = ["pdf", "xlsx", "json"]
+    parameters = ["start_date", "end_date"]
+
+    def render(self, title: str, start: str, end: str, kpis: Dict[str, Any], violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        line = "=" * 75
+        now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        lines = [
+            line,
+            f"                  TRAFFIC & VEHICLE ANALYTICS: {title}",
+            line,
+            f"RANGE             : {start} to {end}",
+            f"GENERATED         : {now_str} UTC",
+            "---------------------------------------------------------------------------",
+            f"{'Vehicle Class':<45} | {'Count':<10}",
+            "---------------------------------------------------------------------------"
+        ]
+        for vh in vehicles:
+            lines.append(f"{vh['name']:<45} | {vh['value']:<10}")
+        lines.append(line)
+        return "\n".join(lines) + "\n"
+
+
+class SystemTemplate(BaseReportTemplate):
+    template_id = "system_report"
+    name = "AI Model & Hardware Health Report"
+    description = "Diagnostics summary of AI camera latency, network connections, and system availability."
+    supported_formats = ["pdf", "json"]
+    parameters = []
+
+    def render(self, title: str, start: str, end: str, kpis: Dict[str, Any], violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        line = "=" * 75
+        now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        return f"""
+{line}
+                  AI ENGINE SYSTEM DIAGNOSTICS REPORT
+{line}
+TITLE             : {title}
+GENERATED         : {now_str} UTC
+---------------------------------------------------------------------------
+Diagnostics Status: HEALTHY
+System Uptime     : {kpis.get('system_uptime', '99.95%')}
+Average Conf      : {kpis.get('avg_confidence', 0.88):.2%}
+{line}
+"""
 
 
 class ReportTemplateService:
     """
-    Houses layouts, cover page definitions, and parameters for system report templates.
+    Registry management class resolving template rendering strategies dynamically.
     """
 
+    def __init__(self):
+        self._templates: Dict[str, BaseReportTemplate] = {}
+        # Self-register default strategies
+        self.register_template(ExecutiveTemplate())
+        self.register_template(ViolationTemplate())
+        self.register_template(AnalyticsTemplate())
+        self.register_template(SystemTemplate())
+
+    def register_template(self, template: BaseReportTemplate) -> None:
+        """Allows registering custom external templates dynamically."""
+        self._templates[template.template_id] = template
+
     def get_available_templates(self) -> List[Dict[str, Any]]:
-        """Returns the list of supported templates and parameters."""
+        """Lists metadata details for all registered templates."""
         return [
             {
-                "id": "daily_summary",
-                "name": "Daily Operations Report",
-                "description": "24-hour summary of violation counts, active cameras, and system performance.",
-                "supported_formats": ["pdf", "csv", "xlsx", "json"],
-                "parameters": ["start_date", "camera_id"]
-            },
-            {
-                "id": "weekly_trends",
-                "name": "Weekly Traffic & Violation Trends",
-                "description": "7-day trend analysis mapping vehicle classes and repeat offender license plates.",
-                "supported_formats": ["pdf", "xlsx", "json"],
-                "parameters": ["start_date"]
-            },
-            {
-                "id": "monthly_audit",
-                "name": "Monthly Compliance Audit",
-                "description": "Comprehensive report of total fines, payment states, and email delivery statistics.",
-                "supported_formats": ["pdf", "xlsx"],
-                "parameters": ["start_date", "status"]
-            },
-            {
-                "id": "system_health",
-                "name": "System Health & Performance Diagnostics",
-                "description": "Detailed report on AI model processing latency, database connections, and camera uptime.",
-                "supported_formats": ["pdf", "json"],
-                "parameters": []
+                "id": t.template_id,
+                "name": t.name,
+                "description": t.description,
+                "supported_formats": t.supported_formats,
+                "parameters": t.parameters
             }
+            for t in self._templates.values()
         ]
 
+    def get_template(self, template_id: str) -> BaseReportTemplate:
+        """Looks up a template by its ID. Falls back to ExecutiveTemplate on missing."""
+        return self._templates.get(template_id, self._templates["executive_report"])
+
     def render_cover_page(self, title: str, report_type: str, start: str, end: str) -> str:
-        """Compiles a professional ASCII-art cover page for document-style PDF/text layouts."""
+        """Returns standard ASCII-art cover header wrapper."""
         line = "=" * 75
         now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        
         return f"""
 {line}
                   SMART TRAFFIC VIOLATION DETECTION SYSTEM
                              OFFICIAL REPORT
 {line}
-
 REPORT TITLE      : {title}
 REPORT TYPE       : {report_type.upper()}
 DATE RANGE        : {start} to {end}
 GENERATED AT      : {now_str} UTC
-PRODUCED BY       : Traffic Violation AI Pipeline
-
-{line}
-   CONFIDENTIALITY NOTICE: The information contained in this report is
-   for official municipal auditing purposes only.
 {line}
 \n"""
 
