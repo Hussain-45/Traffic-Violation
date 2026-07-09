@@ -152,8 +152,13 @@ class MobilePhoneDetectionModule(BaseAIModule):
                 
                 track_id = vehicle["track_id"]
                 mobile_phone_stats[track_id] = {
+                    "tracking_id": track_id,
+                    "vehicle_class": vehicle["class_id"],
+                    "driver_region": driver_box,
                     "status": status_val,
-                    "confidence": conf_val
+                    "confidence": conf_val,
+                    "timestamp": context.timestamp,
+                    "frame_id": context.frame_id
                 }
 
                 # Update count metrics
