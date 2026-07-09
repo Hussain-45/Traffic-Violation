@@ -46,6 +46,10 @@ def get_camera_status():
     ws_mod = module_registry.get("wrong_side_detection")
     ws_enabled = "wrong_side_detection" in pipeline_manager.enabled_modules
     ws_model_loaded = ws_mod is not None and ws_mod.health()
+
+    tr_mod = module_registry.get("triple_riding_detection")
+    tr_enabled = "triple_riding_detection" in pipeline_manager.enabled_modules
+    tr_model_loaded = tr_mod is not None and tr_mod.health()
     
     return {
         "connected": camera_manager.is_connected,
@@ -97,6 +101,15 @@ def get_camera_status():
             "detection_status": "Active" if ws_enabled else "Inactive",
             "model_status": "Loaded" if ws_model_loaded else "Not Loaded",
             "training_status": "Rule-based (No Model Required)"
+        },
+        "triple_riding_stats": {
+            "single_rider_count": camera_manager.latest_counts.get("single_rider", 0),
+            "double_riding_count": camera_manager.latest_counts.get("double_riding", 0),
+            "triple_riding_count": camera_manager.latest_counts.get("triple_riding", 0),
+            "unknown_count": camera_manager.latest_counts.get("triple_unknown", 0),
+            "detection_status": "Active" if tr_enabled else "Inactive",
+            "model_status": "Loaded" if tr_model_loaded else "Not Loaded",
+            "association_status": "Active" if tr_enabled else "Inactive"
         }
     }
 

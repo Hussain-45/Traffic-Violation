@@ -13,6 +13,7 @@ execution_order:
   - "phone_detection"
   - "traffic_signal_detection"
   - "wrong_side_detection"
+  - "triple_riding_detection"
   - "number_plate_detection"
   - "ocr"
   - "violation_engine"
@@ -52,6 +53,14 @@ modules:
     association_score_threshold: 0.40
     minimum_confidence: 0.50
     maximum_passengers: 3
+  triple_riding_detection:
+    enabled: true
+    confidence_threshold: 0.50
+    minimum_association_confidence: 0.60
+    minimum_visible_riders: 1
+    minimum_track_age: 5
+    confirmation_frames: 3
+    maximum_riders: 2
   number_plate_detection:
     enabled: false
     confidence_threshold: 0.50

@@ -21,7 +21,11 @@ from ai.detection.seatbelt_detection import SeatBeltDetectionModule
 from ai.detection.mobile_phone_detection import MobilePhoneDetectionModule
 from ai.detection.traffic_signal_detection import TrafficSignalDetectionModule
 from ai.detection.wrong_side_detection import WrongSideDetectionModule
+from ai.detection.triple_riding_detection import TripleRidingDetectionModule
 from ai.services.trajectory_service import trajectory_service
+from ai.services.rider_association_service import rider_association_service
+
+
 
 
 
@@ -109,9 +113,25 @@ class VehicleTrackingModule(BaseAIModule):
             # Update trajectory service with active track boxes
             if tracked is not None and tracked.xyxy is not None and tracked.tracker_id is not None:
                 active_ids = []
-                for box, track_id in zip(tracked.xyxy.tolist(), tracked.tracker_id.tolist()):
+                motorcycles = []
+                riders = []
+                for i in range(len(tracked)):
+                    box = tracked.xyxy[i].tolist()
+                    track_id = int(tracked.tracker_id[i])
+                    cls_idx = int(tracked.class_id[i])
+                    conf = float(tracked.confidence[i])
+
                     trajectory_service.update_trajectory(track_id, box, context.timestamp)
                     active_ids.append(track_id)
+
+                    if cls_idx == 3:  # motorcycle
+                        motorcycles.append({"id": track_id, "bbox": box, "conf": conf})
+                    elif cls_idx == 0:  # person
+                        riders.append({"id": track_id, "bbox": box, "conf": conf})
+
+                # Perform the one association pass per frame
+                rider_association_service.associate_riders(motorcycles, riders, context.timestamp)
+
                 # Cleanup lost trajectories
                 trajectory_service.clean_inactive_ids(active_ids)
 
@@ -186,6 +206,7 @@ class AIModuleRegistry:
         self.register("traffic_signal_detection", TrafficSignalDetectionModule())
 
         self.register("wrong_side_detection", WrongSideDetectionModule())
+        self.register("triple_riding_detection", TripleRidingDetectionModule())
         self.register("number_plate_detection", MockAIModule("number_plate_detection"))
         self.register("ocr", MockAIModule("ocr"))
         self.register("violation_engine", MockAIModule("violation_engine"))

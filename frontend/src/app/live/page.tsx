@@ -73,6 +73,16 @@ interface WrongSideStats {
   training_status: string;
 }
 
+interface TripleRidingStats {
+  single_rider_count: number;
+  double_riding_count: number;
+  triple_riding_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  association_status: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -89,6 +99,7 @@ interface CameraStatus {
   mobile_phone_stats?: MobilePhoneStats;
   traffic_signal_stats?: TrafficSignalStats;
   wrong_side_stats?: WrongSideStats;
+  triple_riding_stats?: TripleRidingStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -709,6 +720,57 @@ export default function LiveMonitoringPage() {
                     label: "Training Status",
                     val: status?.wrong_side_stats?.training_status ?? "Not Trained",
                     cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Triple Riding Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Triple Riding Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Single Rider Count",
+                    val: status?.triple_riding_stats?.single_rider_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Double Riding Count",
+                    val: status?.triple_riding_stats?.double_riding_count ?? 0,
+                    cls: "text-brand-orange font-semibold",
+                  },
+                  {
+                    label: "Triple Riding Count",
+                    val: status?.triple_riding_stats?.triple_riding_count ?? 0,
+                    cls: (status?.triple_riding_stats?.triple_riding_count ?? 0) > 0 ? "text-status-red font-semibold animate-pulse" : "text-slate-300",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.triple_riding_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.triple_riding_stats?.detection_status ?? "Inactive",
+                    cls: status?.triple_riding_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.triple_riding_stats?.model_status ?? "Not Loaded",
+                    cls: status?.triple_riding_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Association Status",
+                    val: status?.triple_riding_stats?.association_status ?? "Inactive",
+                    cls: status?.triple_riding_stats?.association_status === "Active" ? "text-status-green" : "text-slate-400",
                   },
                 ].map(({ label, val, cls }) => (
                   <div key={label} className="px-5 py-2.5 flex justify-between">
