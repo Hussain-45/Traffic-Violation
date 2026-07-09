@@ -25,14 +25,23 @@ from backend.app.services.analytics_service import analytics_service
 from backend.app.repositories.analytics_repository import AnalyticsRepository
 from backend.app.schemas.analytics_schema import AnalyticsReportCreate
 
-# Set up clean in-memory SQLite database for testing analytics operations
-test_engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+# Set up clean file-based SQLite database for testing analytics operations
+import os
+test_db_filename = "test_analytics.db"
+test_engine = create_engine(f"sqlite:///{test_db_filename}", connect_args={"check_same_thread": False})
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
 @pytest.fixture(autouse=True)
 def setup_test_database():
-    # Recreate tables in-memory for each test run
+    # Remove old test DB if it exists
+    if os.path.exists(test_db_filename):
+        try:
+            os.remove(test_db_filename)
+        except Exception:
+            pass
+            
+    # Recreate tables for each test run
     Base.metadata.create_all(bind=test_engine)
     
     # Seed mock data
@@ -98,6 +107,11 @@ def setup_test_database():
     
     yield
     Base.metadata.drop_all(bind=test_engine)
+    if os.path.exists(test_db_filename):
+        try:
+            os.remove(test_db_filename)
+        except Exception:
+            pass
 
 
 def test_repository_kpis():
