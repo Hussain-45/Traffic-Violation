@@ -82,6 +82,13 @@ modules:
     maximum_aspect_ratio: 6.5
     association_score: 0.35
     stable_confirmation_frames: 5
+  plate_recognition:
+    minimum_ocr_confidence: 0.50
+    minimum_votes: 3
+    minimum_history: 3
+    minimum_validation_score: 0.60
+    maximum_history: 15
+    normalization_rules: true
   ocr:
     enabled: false
     confidence_threshold: 0.50
