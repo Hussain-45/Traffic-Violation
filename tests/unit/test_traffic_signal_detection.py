@@ -145,7 +145,8 @@ def test_traffic_signal_classification(mock_ts_module):
     
     assert ts_data[1]["status"] == "Red"
     assert ts_data[1]["module_name"] == "traffic_signal_detection"
-    assert ts_data[1]["tracking_id"] == -1
+    assert ts_data[1]["signal_id"] == 1
+    assert ts_data[1]["tracking_id"] is None
     assert ts_data[1]["vehicle_class"] == -1
     assert ts_data[1]["confidence"] == 0.98
     
@@ -157,3 +158,26 @@ def test_traffic_signal_classification(mock_ts_module):
     
     assert ts_data[4]["status"] == "Yellow"
     assert ts_data[4]["confidence"] == 0.90
+
+
+def test_road_scene_service_helpers():
+    # Verify validate_region
+    assert RoadSceneService.validate_region([10.0, 10.0, 100.0, 100.0], 640, 480) is True
+    assert RoadSceneService.validate_region([-10.0, 10.0, 100.0, 100.0], 640, 480) is False
+    
+    # Verify get_camera_calibration
+    cal = RoadSceneService.get_camera_calibration()
+    assert cal is not None
+    assert "resolution" in cal
+    assert cal["resolution"] == [1920, 1080]
+    
+    # Verify get_road_scene_state
+    state = RoadSceneService.get_road_scene_state("traffic_light", 1920, 1080, 100, 1783584850.25)
+    assert state["scene_id"] == "default_intersection"
+    assert state["roi_type"] == "traffic_light"
+    assert state["frame_id"] == 100
+    assert state["timestamp"] == 1783584850.25
+    assert "coordinates" in state
+    assert "metadata" in state
+    assert state["metadata"]["direction"] == "incoming"
+

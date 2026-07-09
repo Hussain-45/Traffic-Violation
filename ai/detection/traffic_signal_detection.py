@@ -145,11 +145,11 @@ class TrafficSignalDetectionModule(BaseAIModule):
                 status_val = class_to_status.get(det["cls"], "Unknown")
                 conf_val = det["conf"]
                 
-                # Standardized output DetectionResult
                 det_res = DetectionResult(
                     module_name="traffic_signal_detection",
-                    tracking_id=-1,  # Static signal, not a tracked vehicle
-                    vehicle_class=-1, # Not a vehicle
+                    signal_id=signal_id,
+                    tracking_id=None,  # Nullable track ID
+                    vehicle_class=-1,
                     region=det["xyxy"],
                     status=status_val,
                     confidence=conf_val,

@@ -59,6 +59,62 @@ class RoadSceneService:
         return None
 
     @staticmethod
+    def get_camera_calibration() -> Optional[Dict[str, Any]]:
+        """
+        Retrieves camera calibration coefficients and parameters (placeholder).
+        """
+        return {
+            "camera_matrix": None,
+            "dist_coeffs": None,
+            "resolution": [1920, 1080]
+        }
+
+    @staticmethod
+    def validate_region(box_xyxy: List[float], frame_width: int, frame_height: int) -> bool:
+        """
+        Validates if the coordinates of a region box are physically within frame boundaries.
+        """
+        x1, y1, x2, y2 = box_xyxy
+        return 0 <= x1 < x2 <= frame_width and 0 <= y1 < y2 <= frame_height
+
+    @staticmethod
+    def get_road_scene_state(
+        roi_type: str,
+        frame_width: int,
+        frame_height: int,
+        frame_id: int,
+        timestamp: float,
+        scene_id: str = "default_intersection"
+    ) -> Dict[str, Any]:
+        """
+        Standardized output structure for road scene queries.
+        Includes scene metadata, roi configuration, timestamps, and frame bounds.
+        """
+        # Resolve bounding coordinates based on type
+        if roi_type == "traffic_light":
+            coords = RoadSceneService.get_traffic_light_roi(frame_width, frame_height)
+        elif roi_type == "intersection":
+            coords = RoadSceneService.get_intersection_roi(frame_width, frame_height)
+        elif roi_type == "stop_line":
+            coords = RoadSceneService.get_stop_line_roi(frame_width, frame_height)
+        elif roi_type == "lane":
+            coords = RoadSceneService.get_lane_region(frame_width, frame_height)
+        else:
+            coords = [0.0, 0.0, float(frame_width), float(frame_height)]
+
+        return {
+            "scene_id": scene_id,
+            "roi_type": roi_type,
+            "coordinates": coords,
+            "confidence": 1.0,  # Defined region confidence
+            "timestamp": timestamp,
+            "frame_id": frame_id,
+            "metadata": {
+                "direction": RoadSceneService.get_road_direction(frame_width, frame_height)
+            }
+        }
+
+    @staticmethod
     def is_in_roi(box_xyxy: List[float], roi_xyxy: List[float]) -> bool:
         """
         Checks if the center of a bounding box falls within the specified ROI.
@@ -70,3 +126,4 @@ class RoadSceneService:
         bcy = (by1 + by2) / 2
         
         return rx1 <= bcx <= rx2 and ry1 <= bcy <= ry2
+

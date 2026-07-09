@@ -13,8 +13,9 @@ class DetectionResult(BaseModel):
     Standardized payload for an AI pipeline module's detection output.
     """
     module_name: str = Field(..., description="Name of the AI module (e.g. 'helmet_detection', 'seat_belt_detection', 'mobile_phone_detection')")
-    tracking_id: int = Field(..., description="Unique track ID of the associated vehicle")
-    vehicle_class: int = Field(..., description="Vehicle class ID from tracking (e.g. 2=car, 3=motorcycle)")
+    tracking_id: Optional[int] = Field(default=-1, description="Unique track ID of the associated vehicle")
+    vehicle_class: Optional[int] = Field(default=-1, description="Vehicle class ID from tracking (e.g. 2=car, 3=motorcycle)")
+    signal_id: Optional[int] = Field(default=None, description="Unique signal ID for traffic light detection")
     region: List[float] = Field(..., description="Bounding box coordinates of the evaluation region [x1, y1, x2, y2]")
     status: str = Field(..., description="Status classification result (e.g. 'Seat Belt', 'No Seat Belt', 'Unknown', 'Mobile Phone')")
     confidence: float = Field(..., description="Detection confidence score (0.0 to 1.0)")
