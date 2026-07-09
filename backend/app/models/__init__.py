@@ -112,20 +112,6 @@ class Payment(Base):
     violation = relationship("Violation", back_populates="payments")
 
 
-class Report(Base):
-    __tablename__ = "reports"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    report_type = Column(String, nullable=False)  # violations, revenue, analytics
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
-    file_path = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-
-    user = relationship("User", back_populates="reports")
-
 
 class Setting(Base):
     __tablename__ = "settings"
@@ -165,3 +151,4 @@ class Notification(Base):
 from backend.app.models.email_log_model import EmailLogModel
 from backend.app.models.analytics_model import AnalyticsReportModel
 from backend.app.models.evidence_model import EvidenceModel
+from backend.app.models.report_model import Report
