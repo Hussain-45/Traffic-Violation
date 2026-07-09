@@ -22,7 +22,9 @@ from ai.detection.mobile_phone_detection import MobilePhoneDetectionModule
 from ai.detection.traffic_signal_detection import TrafficSignalDetectionModule
 from ai.detection.wrong_side_detection import WrongSideDetectionModule
 from ai.detection.triple_riding_detection import TripleRidingDetectionModule
+from ai.detection.number_plate_detection import NumberPlateDetectionModule
 from ai.services.trajectory_service import trajectory_service
+
 from ai.services.rider_association_service import rider_association_service
 
 
@@ -207,7 +209,7 @@ class AIModuleRegistry:
 
         self.register("wrong_side_detection", WrongSideDetectionModule())
         self.register("triple_riding_detection", TripleRidingDetectionModule())
-        self.register("number_plate_detection", MockAIModule("number_plate_detection"))
+        self.register("number_plate_detection", NumberPlateDetectionModule())
         self.register("ocr", MockAIModule("ocr"))
         self.register("violation_engine", MockAIModule("violation_engine"))
 

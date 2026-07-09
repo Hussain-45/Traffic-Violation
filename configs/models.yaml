@@ -77,5 +77,24 @@ traffic_signal:
       weights: "models/trained/traffic_light_x.pt"
       description: "YOLOv8 Extra Large Traffic Light"
 
+number_plate:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/number_plate_best.pt"
+      description: "YOLOv8 Nano Number Plate - Ultra fast, low memory"
+    s:
+      weights: "models/trained/number_plate_s.pt"
+      description: "YOLOv8 Small Number Plate"
+    m:
+      weights: "models/trained/number_plate_m.pt"
+      description: "YOLOv8 Medium Number Plate"
+    l:
+      weights: "models/trained/number_plate_l.pt"
+      description: "YOLOv8 Large Number Plate"
+    x:
+      weights: "models/trained/number_plate_x.pt"
+      description: "YOLOv8 Extra Large Number Plate"
+
 
 

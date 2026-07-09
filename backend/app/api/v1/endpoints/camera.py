@@ -50,6 +50,11 @@ def get_camera_status():
     tr_mod = module_registry.get("triple_riding_detection")
     tr_enabled = "triple_riding_detection" in pipeline_manager.enabled_modules
     tr_model_loaded = tr_mod is not None and tr_mod.health()
+
+    np_mod = module_registry.get("number_plate_detection")
+    np_enabled = "number_plate_detection" in pipeline_manager.enabled_modules
+    np_model_loaded = np_mod is not None and np_mod.health()
+    np_weights_exist = os.path.exists("models/trained/number_plate_best.pt")
     
     return {
         "connected": camera_manager.is_connected,
@@ -110,6 +115,15 @@ def get_camera_status():
             "detection_status": "Active" if tr_enabled else "Inactive",
             "model_status": "Loaded" if tr_model_loaded else "Not Loaded",
             "association_status": "Active" if tr_enabled else "Inactive"
+        },
+        "number_plate_stats": {
+            "detecting_count": camera_manager.latest_counts.get("anpr_detecting", 0),
+            "stable_count": camera_manager.latest_counts.get("anpr_stable", 0),
+            "unknown_count": camera_manager.latest_counts.get("anpr_unknown", 0),
+            "crop_ready_count": camera_manager.latest_counts.get("anpr_crops", 0),
+            "detection_status": "Active" if np_enabled else "Inactive",
+            "model_status": "Loaded" if np_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if np_weights_exist else "Not Trained"
         }
     }
 

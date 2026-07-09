@@ -71,8 +71,14 @@ modules:
       overlap: 0.60
       distance: 0.40
   number_plate_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_plate_confidence: 0.50
+    minimum_crop_width: 30
+    minimum_crop_height: 10
+    minimum_visibility: 0.10
+    association_score: 0.35
+    stable_confirmation_frames: 5
   ocr:
     enabled: false
     confidence_threshold: 0.50

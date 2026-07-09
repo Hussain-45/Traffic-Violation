@@ -83,6 +83,16 @@ interface TripleRidingStats {
   association_status: string;
 }
 
+interface NumberPlateStats {
+  detecting_count: number;
+  stable_count: number;
+  unknown_count: number;
+  crop_ready_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -100,6 +110,7 @@ interface CameraStatus {
   traffic_signal_stats?: TrafficSignalStats;
   wrong_side_stats?: WrongSideStats;
   triple_riding_stats?: TripleRidingStats;
+  number_plate_stats?: NumberPlateStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -771,6 +782,52 @@ export default function LiveMonitoringPage() {
                     label: "Association Status",
                     val: status?.triple_riding_stats?.association_status ?? "Inactive",
                     cls: status?.triple_riding_stats?.association_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Number Plate Detection (ANPR Stage 1) */}
+          <Card>
+            <CardHeader><CardTitle>Number Plate Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Detecting Plates",
+                    val: status?.number_plate_stats?.detecting_count ?? 0,
+                    cls: "text-brand-orange font-semibold",
+                  },
+                  {
+                    label: "Stable Plates",
+                    val: status?.number_plate_stats?.stable_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Crop Ready Count",
+                    val: status?.number_plate_stats?.crop_ready_count ?? 0,
+                    cls: "text-brand-cyan font-semibold",
+                  },
+                  {
+                    label: "Unknown Plates",
+                    val: status?.number_plate_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.number_plate_stats?.detection_status ?? "Inactive",
+                    cls: status?.number_plate_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.number_plate_stats?.model_status ?? "Not Loaded",
+                    cls: status?.number_plate_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
                   },
                 ].map(({ label, val, cls }) => (
                   <div key={label} className="px-5 py-2.5 flex justify-between">
