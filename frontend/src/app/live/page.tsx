@@ -93,6 +93,16 @@ interface NumberPlateStats {
   training_status: string;
 }
 
+interface OCRStats {
+  requests_count: number;
+  verified_count: number;
+  rejected_count: number;
+  avg_confidence: number;
+  detection_status: string;
+  model_status: string;
+  engine_name: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -111,6 +121,7 @@ interface CameraStatus {
   wrong_side_stats?: WrongSideStats;
   triple_riding_stats?: TripleRidingStats;
   number_plate_stats?: NumberPlateStats;
+  ocr_stats?: OCRStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -828,6 +839,52 @@ export default function LiveMonitoringPage() {
                     label: "Model Status",
                     val: status?.number_plate_stats?.model_status ?? "Not Loaded",
                     cls: status?.number_plate_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* OCR Recognition (ANPR Stage 2) */}
+          <Card>
+            <CardHeader><CardTitle>OCR Recognition Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "OCR Requests",
+                    val: status?.ocr_stats?.requests_count ?? 0,
+                    cls: "text-brand-cyan font-semibold",
+                  },
+                  {
+                    label: "Verified Plates",
+                    val: status?.ocr_stats?.verified_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Rejected OCR",
+                    val: status?.ocr_stats?.rejected_count ?? 0,
+                    cls: "text-status-red font-semibold",
+                  },
+                  {
+                    label: "Average Confidence",
+                    val: `${status?.ocr_stats?.avg_confidence ? Math.round(status.ocr_stats.avg_confidence) : 0}%`,
+                    cls: "text-brand-orange font-mono font-semibold",
+                  },
+                  {
+                    label: "Recognition Status",
+                    val: status?.ocr_stats?.detection_status ?? "Inactive",
+                    cls: status?.ocr_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "OCR Engine",
+                    val: status?.ocr_stats?.engine_name ?? "easyocr",
+                    cls: "text-brand-cyan uppercase font-semibold",
                   },
                 ].map(({ label, val, cls }) => (
                   <div key={label} className="px-5 py-2.5 flex justify-between">

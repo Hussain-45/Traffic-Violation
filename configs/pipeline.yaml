@@ -90,8 +90,14 @@ modules:
     maximum_history: 15
     normalization_rules: true
   ocr:
-    enabled: false
+    enabled: true
+    ocr_engine: "easyocr"
     confidence_threshold: 0.50
+    minimum_ocr_confidence: 0.50
+    maximum_crop_rotation: 15.0
+    batch_size: 4
+    gpu: false
+    language: "en"
   violation_engine:
     enabled: false
     confidence_threshold: 0.50

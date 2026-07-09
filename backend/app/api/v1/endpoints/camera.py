@@ -55,6 +55,10 @@ def get_camera_status():
     np_enabled = "number_plate_detection" in pipeline_manager.enabled_modules
     np_model_loaded = np_mod is not None and np_mod.health()
     np_weights_exist = os.path.exists("models/trained/number_plate_best.pt")
+
+    ocr_mod = module_registry.get("ocr")
+    ocr_enabled = "ocr" in pipeline_manager.enabled_modules
+    ocr_model_loaded = ocr_mod is not None and ocr_mod.health()
     
     return {
         "connected": camera_manager.is_connected,
@@ -124,6 +128,15 @@ def get_camera_status():
             "detection_status": "Active" if np_enabled else "Inactive",
             "model_status": "Loaded" if np_model_loaded else "Not Loaded",
             "training_status": "Pre-trained Weights Available" if np_weights_exist else "Not Trained"
+        },
+        "ocr_stats": {
+            "requests_count": camera_manager.latest_counts.get("ocr_requests", 0),
+            "verified_count": camera_manager.latest_counts.get("ocr_verified", 0),
+            "rejected_count": camera_manager.latest_counts.get("ocr_rejected", 0),
+            "avg_confidence": camera_manager.latest_counts.get("ocr_avg_conf", 0),
+            "detection_status": "Active" if ocr_enabled else "Inactive",
+            "model_status": "Loaded" if ocr_model_loaded else "Not Loaded",
+            "engine_name": getattr(ocr_mod, "engine_name", "easyocr") if ocr_mod else "easyocr"
         }
     }
 
