@@ -1,2 +1,8 @@
-# Camera Configuration
-# Define RTSP streams and camera input configurations
+# Camera Configuration parameters for the Traffic Violation AI system
+default_camera: 0
+fps: 30
+width: 1280
+height: 720
+reconnect_attempts: 5
+timeout: 5.0
+buffer_size: 2

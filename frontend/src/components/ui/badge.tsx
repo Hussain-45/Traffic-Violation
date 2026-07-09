@@ -1,27 +1,25 @@
-import * as React from "react"
-import { cn } from "../../lib/utils"
+import React from "react";
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "success"
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: "info" | "success" | "warning" | "danger" | "neutral";
+  children: React.ReactNode;
 }
 
-function Badge({ className, variant = "default", ...props }: BadgeProps) {
+export function Badge({ variant = "neutral", children, className = "", ...props }: BadgeProps) {
+  const baseStyle =
+    "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold select-none border";
+
+  const variants = {
+    neutral: "bg-navy-accent/50 text-slate-300 border-navy-accent",
+    info: "bg-brand-blue/10 text-brand-blue border-brand-blue/20",
+    success: "bg-status-green/10 text-status-green border-status-green/20",
+    warning: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    danger: "bg-status-red/10 text-status-red border-status-red/20",
+  };
+
   return (
-    <div
-      className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors focus:outline-none",
-        {
-          "border-transparent bg-blue-600 text-white shadow shadow-blue-500/10": variant === "default",
-          "border-transparent bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100": variant === "secondary",
-          "border-transparent bg-red-500/10 text-red-500 border-red-500/20": variant === "destructive",
-          "border-transparent bg-emerald-500/10 text-emerald-500 border-emerald-500/20": variant === "success",
-          "border-slate-200 text-slate-900 dark:border-slate-800 dark:text-slate-100": variant === "outline"
-        },
-        className
-      )}
-      {...props}
-    />
-  )
+    <span className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+      {children}
+    </span>
+  );
 }
-
-export { Badge }

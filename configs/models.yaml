@@ -1,0 +1,21 @@
+# AI Models Configuration
+# Defines weights path configurations for switching between model sizes (n, s, m, l, x)
+
+helmet:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/helmet_best.pt"
+      description: "YOLOv8 Nano - Ultra fast, low memory, optimized for CPU/Edge"
+    s:
+      weights: "models/trained/helmet_s.pt"
+      description: "YOLOv8 Small - Balanced speed and accuracy"
+    m:
+      weights: "models/trained/helmet_m.pt"
+      description: "YOLOv8 Medium - Higher accuracy, moderate resource usage"
+    l:
+      weights: "models/trained/helmet_l.pt"
+      description: "YOLOv8 Large - High accuracy, optimized for GPU inference"
+    x:
+      weights: "models/trained/helmet_x.pt"
+      description: "YOLOv8 Extra Large - Maximum accuracy, high latency"

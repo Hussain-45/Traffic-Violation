@@ -1,0 +1,60 @@
+# Centralized AI Pipeline Configuration
+
+# Global settings
+debug_mode: true
+logging_level: "INFO"
+
+# Execution order of pipeline modules
+execution_order:
+  - "vehicle_detection"
+  - "vehicle_tracking"
+  - "helmet_detection"
+  - "seat_belt_detection"
+  - "phone_detection"
+  - "traffic_signal_detection"
+  - "wrong_side_detection"
+  - "number_plate_detection"
+  - "ocr"
+  - "violation_engine"
+
+# Dynamic AI Modules activation state and parameters
+modules:
+  vehicle_detection:
+    enabled: true
+    confidence_threshold: 0.45
+  vehicle_tracking:
+    enabled: true
+    confidence_threshold: 0.45
+  helmet_detection:
+    enabled: true
+    confidence_threshold: 0.50
+  seat_belt_detection:
+    enabled: false
+    confidence_threshold: 0.50
+  phone_detection:
+    enabled: false
+    confidence_threshold: 0.50
+  traffic_signal_detection:
+    enabled: false
+    confidence_threshold: 0.50
+  wrong_side_detection:
+    enabled: false
+    confidence_threshold: 0.50
+  number_plate_detection:
+    enabled: false
+    confidence_threshold: 0.50
+  ocr:
+    enabled: false
+    confidence_threshold: 0.50
+  violation_engine:
+    enabled: false
+    confidence_threshold: 0.50
+
+# Visualization Options
+visualization:
+  draw_boxes: true
+  draw_ids: true
+  draw_labels: true
+  draw_roi: true
+  draw_trails: false
+  draw_heatmap: false
