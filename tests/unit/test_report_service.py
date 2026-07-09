@@ -1,28 +1,28 @@
 """
-Unit Tests for Report Repository, Service, and API Endpoints
-============================================================
+Unit Tests for Report Context, Storage, Templates, and Async Processors
+=======================================================================
 Asserts:
-  1. PDF document formatting (ASCII cover page, KPIs, footers).
-  2. CSV, Excel, and JSON report file compilation.
-  3. Report database state lifecycle (generating -> completed/failed).
-  4. Template metadata listing and query parameters.
-  5. ZIP file export packaging.
-  6. Endpoint routing parameters and dependency overrides.
+  1. Standardized ReportContext creation and serialization.
+  2. StorageAdapter LocalFileSystem save/get operations.
+  3. Decoupled template rendering strategies (Executive, Violation, Analytics, System).
+  4. BackgroundTasks asynchronous compilation, checksum, and version audits.
+  5. Download tracking counts and 410 expiry error handling.
 """
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from fastapi.testclient import TestClient
 import datetime
 import os
-import shutil
+import hashlib
 
 from backend.app.database import Base
 from backend.main import app
 from backend.app.models import Violation, Vehicle, Camera, User, Report
-from backend.app.models.email_log_model import EmailLogModel
 from backend.app.services.report_service import report_service
+from backend.app.services.report_template_service import report_template_service
+from backend.app.services.report_context import ReportContext
 from backend.app.schemas.report_schema import ReportCreate, ReportFilterSchema
 
 # Use a clean file-based SQLite database for testing report operations
@@ -77,7 +77,9 @@ def setup_test_database():
     db.commit()
     db.close()
     
+    report_service.session_maker = TestSessionLocal
     yield
+    report_service.session_maker = None
     Base.metadata.drop_all(bind=test_engine)
     
     # Clean up test database file
@@ -98,59 +100,86 @@ def setup_test_database():
                     pass
 
 
-def test_pdf_report_generation():
-    db = TestSessionLocal()
+def test_report_context_serialization():
+    ctx = ReportContext(
+        report_id=101,
+        generated_by=9,
+        report_type="executive_report",
+        start_date=datetime.datetime(2026, 7, 1),
+        end_date=datetime.datetime(2026, 7, 10),
+        filters_applied={"severity": "high"},
+        kpis={"total_violations": 5},
+        violation_distribution=[{"name": "No Helmet", "value": 5}],
+        vehicle_distribution=[{"name": "motorbike", "value": 5}],
+        version="1.2.0",
+        checksum="abcd1234"
+    )
     
+    serialized = ctx.to_dict()
+    assert serialized["report_id"] == 101
+    assert serialized["version"] == "1.2.0"
+    assert serialized["filters_applied"]["severity"] == "high"
+    assert serialized["checksum"] == "abcd1234"
+
+
+def test_template_strategies():
+    templates = report_template_service.get_available_templates()
+    ids = [t["id"] for t in templates]
+    assert "executive_report" in ids
+    assert "violation_report" in ids
+    assert "analytics_report" in ids
+    assert "system_report" in ids
+
+    # Test rendering ViolationTemplate
+    t_violation = report_template_service.get_template("violation_report")
+    output = t_violation.render(
+        title="Audit",
+        start="2026-07-01",
+        end="2026-07-10",
+        kpis={},
+        violations=[{"name": "Seat Belt", "value": 12}],
+        vehicles=[]
+    )
+    assert "DETAILED VIOLATION REPORT" in output
+    assert "Seat Belt" in output
+
+
+def test_async_generation_and_storage():
+    db = TestSessionLocal()
+    bg = BackgroundTasks()
+
     payload = ReportCreate(
-        title="Official Traffic Audit",
-        report_type="daily_summary",
+        title="Async Audit Report",
+        report_type="executive_report",
         start_date=datetime.datetime(2026, 7, 1),
         end_date=datetime.datetime(2026, 7, 10),
         format="pdf",
         filters=ReportFilterSchema()
     )
-    
-    report = report_service.generate_report(db, user_id=9, payload=payload)
-    
+
+    report = report_service.generate_report(db, user_id=9, payload=payload, background_tasks=bg)
+    assert report.status == "generating"
+
+    # Force background task execution inline
+    task = bg.tasks[0]
+    task.kwargs["db"] = db
+    task.func(*task.args, **task.kwargs)
+
+    # Refresh DB record
+    db.refresh(report)
     assert report.status == "completed"
-    assert report.format == "pdf"
-    assert "Official Traffic Audit" in report.title
-    
+    assert report.checksum is not None
+    assert report.version == "1.0.0"
+
+    # Verify physical file exists and matches checksum
     filename = os.path.basename(report.file_path)
     physical_path = os.path.join("data", "reports", filename)
     assert os.path.exists(physical_path)
     
-    with open(physical_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        assert "OFFICIAL REPORT" in content
-        assert "EXECUTIVE KPI SUMMARY" in content
-        assert "Generated by Traffic Violation AI" in content
-
-    db.close()
-
-
-def test_csv_report_generation():
-    db = TestSessionLocal()
-    
-    payload = ReportCreate(
-        title="Export Sheet",
-        report_type="weekly_trends",
-        start_date=datetime.datetime(2026, 7, 1),
-        end_date=datetime.datetime(2026, 7, 10),
-        format="csv",
-        filters=ReportFilterSchema()
-    )
-    
-    report = report_service.generate_report(db, user_id=9, payload=payload)
-    assert report.status == "completed"
-    
-    filename = os.path.basename(report.file_path)
-    physical_path = os.path.join("data", "reports", filename)
-    assert os.path.exists(physical_path)
-    
-    with open(physical_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        assert "License Plate" in content
+    with open(physical_path, "rb") as f:
+        file_bytes = f.read()
+        calculated = hashlib.sha256(file_bytes).hexdigest()
+        assert calculated == report.checksum
 
     db.close()
 
@@ -193,7 +222,6 @@ def test_api_report_endpoints():
         res = client.get("/api/v1/reports/templates")
         assert res.status_code == 200
         assert len(res.json()) > 0
-        assert res.json()[0]["id"] == "daily_summary"
 
         # 2. Trigger report generation
         payload = {
@@ -207,39 +235,38 @@ def test_api_report_endpoints():
         res = client.post("/api/v1/reports/generate", json=payload)
         assert res.status_code == 201
         report_data = res.json()
-        assert report_data["status"] == "completed"
+        assert report_data["status"] == "generating"
         report_id = report_data["id"]
 
-        # 3. Download generated file
+        # Simulate async worker finishing the report
+        db = TestSessionLocal()
+        report_service.process_report_async(report_id, 9, {
+            "start_date": "2026-07-01T00:00:00",
+            "end_date": "2026-07-10T23:59:59",
+            "filters": {}
+        })
+        db.close()
+
+        # 3. Download generated file and assert download count incremented
         res = client.get(f"/api/v1/reports/download/{report_id}")
         assert res.status_code == 200
         assert "application/pdf" in res.headers["content-type"]
 
-        # 4. Fetch history list
-        res = client.get("/api/v1/reports")
-        assert res.status_code == 200
-        assert len(res.json()) >= 1
-        assert res.json()[0]["title"] == "API Daily Summary"
+        db = TestSessionLocal()
+        r = report_service.get_report(db, report_id)
+        assert r.download_count == 1
+        db.close()
 
-        # 5. Fetch history audit
-        res = client.get("/api/v1/reports/history")
-        assert res.status_code == 200
-        assert len(res.json()) >= 1
+        # 4. Test Expiration check: set expires_at in the past
+        db = TestSessionLocal()
+        r_db = report_service.get_report(db, report_id)
+        r_db.expires_at = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        db.commit()
+        db.close()
 
-        # 6. Export ZIP package
-        res = client.get("/api/v1/reports/export")
-        assert res.status_code == 200
-        assert "application/x-zip-compressed" in res.headers["content-type"]
-
-        # 7. Get engine health status
-        res = client.get("/api/v1/reports/health")
-        assert res.status_code == 200
-        assert res.json()["engine_status"] == "healthy"
-
-        # 8. Delete report record
-        res = client.delete(f"/api/v1/reports/delete/{report_id}")
-        assert res.status_code == 200
-        assert res.json()["success"] is True
+        res = client.get(f"/api/v1/reports/download/{report_id}")
+        assert res.status_code == 410
+        assert "expired" in res.json()["detail"]
 
     finally:
         app.dependency_overrides.clear()

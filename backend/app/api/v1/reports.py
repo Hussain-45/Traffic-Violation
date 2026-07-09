@@ -3,19 +3,21 @@ Report Generation FastAPI Routing
 =================================
 Defines REST endpoints for listing, generating, downloading, and deleting system reports.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 import zipfile
 import io
+import datetime
 
 from backend.app.database import get_db
 from backend.app.auth.jwt import get_current_user
 from backend.app.models import User
 from backend.app.controllers.report_controller import report_controller
 from backend.app.schemas.report_schema import ReportCreate, ReportResponse, ReportTemplateResponse
+from backend.app.services.report_service import report_service
 
 router = APIRouter(prefix="/reports", tags=["Reports V1"])
 
@@ -29,18 +31,24 @@ def get_reports_list(
     current_user: User = Depends(get_current_user)
 ):
     """Retrieves list of generated report files."""
+    # Enforce basic authorization check: active user
+    if current_user.status != "active":
+        raise HTTPException(status_code=403, detail="Inactive user account.")
     return report_controller.get_history(db, report_type, format, status)
 
 
 @router.post("/generate", response_model=ReportResponse, status_code=status.HTTP_201_CREATED)
 def generate_report(
     payload: ReportCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Triggers report compilation based on template, range filters, and output format."""
+    if current_user.status != "active":
+        raise HTTPException(status_code=403, detail="Inactive user account.")
     try:
-        return report_controller.generate_report(db, current_user.id, payload)
+        return report_controller.generate_report(db, current_user.id, payload, background_tasks)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -52,15 +60,25 @@ def download_report(
     current_user: User = Depends(get_current_user)
 ):
     """Streams the compiled report file to client downloader."""
+    if current_user.status != "active":
+        raise HTTPException(status_code=403, detail="Inactive user account.")
+        
     report = report_controller.get_report(db, report_id)
     if not report or report.status != "completed":
         raise HTTPException(status_code=404, detail="Report file not found or generation failed.")
+
+    # 1. Expiry check
+    if report.expires_at and report.expires_at < datetime.datetime.utcnow():
+        raise HTTPException(status_code=410, detail="The requested report has expired and was purged.")
         
     filename = os.path.basename(report.file_path)
     physical_path = os.path.join("data", "reports", filename)
     
     if not os.path.exists(physical_path):
         raise HTTPException(status_code=404, detail="Physical file missing on server storage.")
+        
+    # 2. Record download event
+    report_service.record_download(db, report_id)
         
     media_type = "application/octet-stream"
     if report.format == "pdf":

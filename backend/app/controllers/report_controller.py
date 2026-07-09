@@ -6,6 +6,7 @@ Coordinates parameter parsing and triggers ReportService generation.
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
+from fastapi import BackgroundTasks
 from backend.app.services.report_service import report_service
 from backend.app.schemas.report_schema import ReportCreate
 from backend.app.models.report_model import Report
@@ -16,9 +17,9 @@ class ReportController:
     Decouples FastAPI HTTP routing from the core ReportService business logic.
     """
 
-    def generate_report(self, db: Session, user_id: int, payload: ReportCreate) -> Report:
+    def generate_report(self, db: Session, user_id: int, payload: ReportCreate, background_tasks: BackgroundTasks) -> Report:
         """Parses inputs and triggers file compilation."""
-        return report_service.generate_report(db, user_id, payload)
+        return report_service.generate_report(db, user_id, payload, background_tasks)
 
     def get_report(self, db: Session, report_id: int) -> Optional[Report]:
         """Retrieves a single report details by ID."""
