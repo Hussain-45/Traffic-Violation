@@ -101,6 +101,19 @@ modules:
   violation_engine:
     enabled: false
     confidence_threshold: 0.50
+  violation_aggregation:
+    history_length: 20
+    minimum_confidence: 0.50
+    minimum_frames: 3
+    context_timeout: 5.0
+    maximum_history: 50
+    aggregation_weights:
+      helmet: 0.80
+      seatbelt: 0.80
+      phone: 0.85
+      wrong_side: 0.90
+      signal: 0.90
+      triple_riding: 0.85
 
 # Visualization Options
 visualization:

@@ -17,6 +17,7 @@ from ai.pipelines.result_object import PipelineResult
 from ai.pipelines.registry import module_registry
 from ai.pipelines.performance_monitor import PerformanceMonitor
 from backend.app.services.inference_service import inference_service
+from ai.services.violation_aggregation_service import violation_aggregation_service
 
 
 class PipelineManager:
@@ -247,6 +248,7 @@ class PipelineManager:
         # Stage 6 — Result Aggregation
         # -------------------------------------------------------------
         # Consolidate results from module context.metadata into metadata
+        violation_aggregation_service.update_from_context(context)
         
         # -------------------------------------------------------------
         # Stage 7 — Visualization (drawing placeholders)
