@@ -35,7 +35,7 @@ modules:
     enabled: true
     confidence_threshold: 0.50
   traffic_signal_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   wrong_side_detection:
     enabled: false

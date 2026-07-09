@@ -58,4 +58,24 @@ mobile_phone:
       weights: "models/trained/mobile_x.pt"
       description: "YOLOv8 Extra Large Mobile"
 
+traffic_signal:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/traffic_light_best.pt"
+      description: "YOLOv8 Nano Traffic Light - Ultra fast, low memory"
+    s:
+      weights: "models/trained/traffic_light_s.pt"
+      description: "YOLOv8 Small Traffic Light"
+    m:
+      weights: "models/trained/traffic_light_m.pt"
+      description: "YOLOv8 Medium Traffic Light"
+    l:
+      weights: "models/trained/traffic_light_l.pt"
+      description: "YOLOv8 Large Traffic Light"
+    x:
+      weights: "models/trained/traffic_light_x.pt"
+      description: "YOLOv8 Extra Large Traffic Light"
+
+
 

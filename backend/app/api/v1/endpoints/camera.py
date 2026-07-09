@@ -37,6 +37,11 @@ def get_camera_status():
     mp_enabled = "phone_detection" in pipeline_manager.enabled_modules
     mp_model_loaded = mp_mod is not None and mp_mod.health()
     mp_weights_exist = os.path.exists("models/trained/mobile_best.pt")
+
+    ts_mod = module_registry.get("traffic_signal_detection")
+    ts_enabled = "traffic_signal_detection" in pipeline_manager.enabled_modules
+    ts_model_loaded = ts_mod is not None and ts_mod.health()
+    ts_weights_exist = os.path.exists("models/trained/traffic_light_best.pt")
     
     return {
         "connected": camera_manager.is_connected,
@@ -71,6 +76,15 @@ def get_camera_status():
             "detection_status": "Active" if mp_enabled else "Inactive",
             "model_status": "Loaded" if mp_model_loaded else "Not Loaded",
             "training_status": "Pre-trained Weights Available" if mp_weights_exist else "Not Trained"
+        },
+        "traffic_signal_stats": {
+            "red_count": camera_manager.latest_counts.get("traffic_red", 0),
+            "yellow_count": camera_manager.latest_counts.get("traffic_yellow", 0),
+            "green_count": camera_manager.latest_counts.get("traffic_green", 0),
+            "unknown_count": camera_manager.latest_counts.get("traffic_unknown", 0),
+            "detection_status": "Active" if ts_enabled else "Inactive",
+            "model_status": "Loaded" if ts_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if ts_weights_exist else "Not Trained"
         }
     }
 
