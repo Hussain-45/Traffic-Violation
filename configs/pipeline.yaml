@@ -29,7 +29,7 @@ modules:
     enabled: true
     confidence_threshold: 0.50
   seat_belt_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   phone_detection:
     enabled: false

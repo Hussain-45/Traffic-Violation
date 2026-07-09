@@ -36,6 +36,15 @@ interface HelmetStats {
   training_status: string;
 }
 
+interface SeatBeltStats {
+  seat_belt_count: number;
+  no_seat_belt_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -48,6 +57,7 @@ interface CameraStatus {
   detections: Detections;
   tracking: TrackingStats;
   helmet_stats?: HelmetStats;
+  seat_belt_stats?: SeatBeltStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -478,6 +488,52 @@ export default function LiveMonitoringPage() {
                   {
                     label: "Training Status",
                     val: status?.helmet_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seat Belt Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Seat Belt Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Seat Belt Count",
+                    val: status?.seat_belt_stats?.seat_belt_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "No Seat Belt Count",
+                    val: status?.seat_belt_stats?.no_seat_belt_count ?? 0,
+                    cls: (status?.seat_belt_stats?.no_seat_belt_count ?? 0) > 0 ? "text-status-red font-semibold" : "text-slate-400",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.seat_belt_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.seat_belt_stats?.detection_status ?? "Inactive",
+                    cls: status?.seat_belt_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.seat_belt_stats?.model_status ?? "Not Loaded",
+                    cls: status?.seat_belt_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.seat_belt_stats?.training_status ?? "Not Trained",
                     cls: "text-slate-300",
                   },
                 ].map(({ label, val, cls }) => (

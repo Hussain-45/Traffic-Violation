@@ -19,3 +19,23 @@ helmet:
     x:
       weights: "models/trained/helmet_x.pt"
       description: "YOLOv8 Extra Large - Maximum accuracy, high latency"
+
+seat_belt:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/seatbelt_best.pt"
+      description: "YOLOv8 Nano Seatbelt - Ultra fast, low memory"
+    s:
+      weights: "models/trained/seatbelt_s.pt"
+      description: "YOLOv8 Small Seatbelt"
+    m:
+      weights: "models/trained/seatbelt_m.pt"
+      description: "YOLOv8 Medium Seatbelt"
+    l:
+      weights: "models/trained/seatbelt_l.pt"
+      description: "YOLOv8 Large Seatbelt"
+    x:
+      weights: "models/trained/seatbelt_x.pt"
+      description: "YOLOv8 Extra Large Seatbelt"
+

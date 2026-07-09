@@ -17,6 +17,7 @@ from ai.pipelines.pipeline_context import PipelineContext
 from backend.app.services.inference_service import inference_service
 from backend.app.services.tracking_service import tracking_service
 from ai.detection.helmet_detection import HelmetDetectionModule
+from ai.detection.seatbelt_detection import SeatBeltDetectionModule
 
 
 class VehicleDetectionModule(BaseAIModule):
@@ -163,7 +164,7 @@ class AIModuleRegistry:
         self.register("vehicle_detection", VehicleDetectionModule())
         self.register("vehicle_tracking", VehicleTrackingModule())
         self.register("helmet_detection", HelmetDetectionModule())
-        self.register("seat_belt_detection", MockAIModule("seat_belt_detection"))
+        self.register("seat_belt_detection", SeatBeltDetectionModule())
         self.register("phone_detection", MockAIModule("phone_detection"))
         self.register("traffic_signal_detection", MockAIModule("traffic_signal_detection"))
         self.register("wrong_side_detection", MockAIModule("wrong_side_detection"))

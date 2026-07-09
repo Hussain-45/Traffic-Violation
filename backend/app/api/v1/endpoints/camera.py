@@ -26,7 +26,12 @@ def get_camera_status():
     helmet_mod = module_registry.get("helmet_detection")
     helmet_enabled = "helmet_detection" in pipeline_manager.enabled_modules
     helmet_model_loaded = helmet_mod is not None and helmet_mod.health()
-    weights_exist = os.path.exists("models/trained/helmet_best.pt")
+    helmet_weights_exist = os.path.exists("models/trained/helmet_best.pt")
+
+    sb_mod = module_registry.get("seat_belt_detection")
+    sb_enabled = "seat_belt_detection" in pipeline_manager.enabled_modules
+    sb_model_loaded = sb_mod is not None and sb_mod.health()
+    sb_weights_exist = os.path.exists("models/trained/seatbelt_best.pt")
     
     return {
         "connected": camera_manager.is_connected,
@@ -44,7 +49,15 @@ def get_camera_status():
             "no_helmet_count": camera_manager.latest_counts.get("no_helmet", 0),
             "detection_status": "Active" if helmet_enabled else "Inactive",
             "model_status": "Loaded" if helmet_model_loaded else "Not Loaded",
-            "training_status": "Pre-trained Weights Available" if weights_exist else "Not Trained"
+            "training_status": "Pre-trained Weights Available" if helmet_weights_exist else "Not Trained"
+        },
+        "seat_belt_stats": {
+            "seat_belt_count": camera_manager.latest_counts.get("seat_belt", 0),
+            "no_seat_belt_count": camera_manager.latest_counts.get("no_seat_belt", 0),
+            "unknown_count": camera_manager.latest_counts.get("unknown_seat_belt", 0),
+            "detection_status": "Active" if sb_enabled else "Inactive",
+            "model_status": "Loaded" if sb_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if sb_weights_exist else "Not Trained"
         }
     }
 
