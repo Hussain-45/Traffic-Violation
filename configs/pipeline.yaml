@@ -128,6 +128,13 @@ modules:
       wrong_side: 0.90
       signal: 0.90
       triple_riding: 0.85
+  evidence_generation:
+    enabled: true
+    output_dir: "outputs/evidence"
+    image_format: "jpg"
+    jpeg_quality: 90
+    camera_id: "CAM_MUM_01"
+    location: "GPS: 19.0760, 72.8777"
 
 # Visualization Options
 visualization:
