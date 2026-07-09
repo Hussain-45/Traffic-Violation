@@ -61,6 +61,15 @@ modules:
     minimum_track_age: 5
     confirmation_frames: 3
     maximum_riders: 2
+  plate_association:
+    minimum_plate_confidence: 0.50
+    minimum_association_score: 0.35
+    minimum_history_length: 3
+    stable_confirmation_frames: 5
+    maximum_plate_distance: 150.0
+    association_weights:
+      overlap: 0.60
+      distance: 0.40
   number_plate_detection:
     enabled: false
     confidence_threshold: 0.50
