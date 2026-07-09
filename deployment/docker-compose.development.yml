@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 🐍 Local Backend hot-reload
+  backend:
+    build:
+      context: ../
+      dockerfile: deployment/docker/Dockerfile.backend
+    container_name: stvds-dev-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/workspace/backend
+      - ../configs:/workspace/configs
+      - ../data:/workspace/data
+    environment:
+      - PROJECT_NAME=Smart Traffic Monitor
+      - UPLOAD_DIR=data/uploads
+      - ACTIVE_AI_AVAILABLE=False
+      - ENV_STATE=development
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    networks:
+      - dev-net
+
+  # ⚛️ Local Frontend hot-reload
+  frontend:
+    image: node:18-alpine
+    container_name: stvds-dev-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - backend
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+    driver: bridge

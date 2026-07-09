@@ -102,6 +102,10 @@ app.include_router(notifications.router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def startup_event():
+    # Validate environment state
+    from backend.app.utils.env_validator import validate_environment
+    validate_environment()
+
     # Setup tables and seed default dataset
     print("[Startup] Initializing Database Schema...")
     Base.metadata.create_all(bind=engine)
