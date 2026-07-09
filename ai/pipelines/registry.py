@@ -18,6 +18,7 @@ from backend.app.services.inference_service import inference_service
 from backend.app.services.tracking_service import tracking_service
 from ai.detection.helmet_detection import HelmetDetectionModule
 from ai.detection.seatbelt_detection import SeatBeltDetectionModule
+from ai.detection.mobile_phone_detection import MobilePhoneDetectionModule
 
 
 class VehicleDetectionModule(BaseAIModule):
@@ -165,7 +166,8 @@ class AIModuleRegistry:
         self.register("vehicle_tracking", VehicleTrackingModule())
         self.register("helmet_detection", HelmetDetectionModule())
         self.register("seat_belt_detection", SeatBeltDetectionModule())
-        self.register("phone_detection", MockAIModule("phone_detection"))
+        self.register("phone_detection", MobilePhoneDetectionModule())
+
         self.register("traffic_signal_detection", MockAIModule("traffic_signal_detection"))
         self.register("wrong_side_detection", MockAIModule("wrong_side_detection"))
         self.register("number_plate_detection", MockAIModule("number_plate_detection"))

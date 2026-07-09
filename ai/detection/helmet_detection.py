@@ -15,6 +15,8 @@ from ultralytics import YOLO
 
 from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
+from ai.services.driver_region_service import DriverRegionService
+
 
 
 class HelmetDetectionModule(BaseAIModule):
@@ -165,17 +167,15 @@ class HelmetDetectionModule(BaseAIModule):
                             break
 
             # If no persons are explicitly associated but we have tracked motorcycles,
-            # use the motorcycle boxes as fallback rider regions (checking top 40% of the box)
+            # use the motorcycle boxes as fallback rider regions (checking top 50% of the box)
             motorcycles_without_riders = [
                 m for m in motorcycles 
                 if not any(r["track_id"] == m["track_id"] for r in riders)
             ]
             for m in motorcycles_without_riders:
-                mx1, my1, mx2, my2 = m["xyxy"]
-                # Define fallback rider box (top half of motorcycle box)
-                m_height = my2 - my1
+                fallback_box = DriverRegionService.get_motorcycle_rider_fallback(m["xyxy"], height_ratio=0.50)
                 riders.append({
-                    "xyxy": [mx1, my1, mx2, my1 + m_height * 0.5],
+                    "xyxy": fallback_box,
                     "track_id": m["track_id"],
                     "rider_track_id": None
                 })
@@ -185,11 +185,10 @@ class HelmetDetectionModule(BaseAIModule):
             helmet_stats = {}
             for r in riders:
                 rx1, ry1, rx2, ry2 = r["xyxy"]
-                r_w = rx2 - rx1
-                r_h = ry2 - ry1
-
-                # Restrict search area to upper 40% of the rider box (head region)
-                head_y2 = ry1 + r_h * 0.45
+                
+                # Restrict search area to upper portion of the rider box (head region) using DriverRegionService
+                head_box = DriverRegionService.get_rider_head_region(r["xyxy"], head_height_ratio=0.45)
+                head_y2 = head_box[3]
 
                 best_match = None
                 max_overlap_ratio = 0.0
@@ -268,9 +267,10 @@ class HelmetDetectionModule(BaseAIModule):
         status_text = "Helmet" if is_helmet else "No Helmet"
         status_icon = "OK" if is_helmet else "ALERT"
         
-        # Draw bounding border around head region (top 35% of rider)
-        head_h = int((ry2 - ry1) * 0.35)
-        cv2.rectangle(img, (rx1, ry1), (rx2, ry1 + head_h), color, 2)
+        # Draw bounding border around head region using DriverRegionService
+        head_box = DriverRegionService.get_rider_head_region(rider_xyxy, head_height_ratio=0.35)
+        hx1, hy1, hx2, hy2 = map(int, head_box)
+        cv2.rectangle(img, (hx1, hy1), (hx2, hy2), color, 2)
         
         # Label text
         motorcycle_label = f"Motorcycle #{track_id}" if track_id is not None else "Motorcycle"

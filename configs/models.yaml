@@ -39,3 +39,23 @@ seat_belt:
       weights: "models/trained/seatbelt_x.pt"
       description: "YOLOv8 Extra Large Seatbelt"
 
+mobile_phone:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/mobile_best.pt"
+      description: "YOLOv8 Nano Mobile - Ultra fast, low memory"
+    s:
+      weights: "models/trained/mobile_s.pt"
+      description: "YOLOv8 Small Mobile"
+    m:
+      weights: "models/trained/mobile_m.pt"
+      description: "YOLOv8 Medium Mobile"
+    l:
+      weights: "models/trained/mobile_l.pt"
+      description: "YOLOv8 Large Mobile"
+    x:
+      weights: "models/trained/mobile_x.pt"
+      description: "YOLOv8 Extra Large Mobile"
+
+

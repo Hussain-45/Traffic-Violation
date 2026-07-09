@@ -32,6 +32,11 @@ def get_camera_status():
     sb_enabled = "seat_belt_detection" in pipeline_manager.enabled_modules
     sb_model_loaded = sb_mod is not None and sb_mod.health()
     sb_weights_exist = os.path.exists("models/trained/seatbelt_best.pt")
+
+    mp_mod = module_registry.get("phone_detection")
+    mp_enabled = "phone_detection" in pipeline_manager.enabled_modules
+    mp_model_loaded = mp_mod is not None and mp_mod.health()
+    mp_weights_exist = os.path.exists("models/trained/mobile_best.pt")
     
     return {
         "connected": camera_manager.is_connected,
@@ -58,6 +63,14 @@ def get_camera_status():
             "detection_status": "Active" if sb_enabled else "Inactive",
             "model_status": "Loaded" if sb_model_loaded else "Not Loaded",
             "training_status": "Pre-trained Weights Available" if sb_weights_exist else "Not Trained"
+        },
+        "mobile_phone_stats": {
+            "phone_count": camera_manager.latest_counts.get("mobile_phone", 0),
+            "no_phone_count": camera_manager.latest_counts.get("no_mobile_phone", 0),
+            "unknown_count": camera_manager.latest_counts.get("unknown_mobile_phone", 0),
+            "detection_status": "Active" if mp_enabled else "Inactive",
+            "model_status": "Loaded" if mp_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if mp_weights_exist else "Not Trained"
         }
     }
 

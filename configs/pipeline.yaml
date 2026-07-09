@@ -32,7 +32,7 @@ modules:
     enabled: true
     confidence_threshold: 0.50
   phone_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   traffic_signal_detection:
     enabled: false

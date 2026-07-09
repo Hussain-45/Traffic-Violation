@@ -15,6 +15,7 @@ from ultralytics import YOLO
 
 from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
+from ai.services.driver_region_service import DriverRegionService
 
 
 class SeatBeltDetectionModule(BaseAIModule):
@@ -144,21 +145,11 @@ class SeatBeltDetectionModule(BaseAIModule):
 
             # 4. wind-shield subdivision and occupant evaluation
             for vehicle in eligible_vehicles:
-                vx1, vy1, vx2, vy2 = vehicle["xyxy"]
-                v_w = vx2 - vx1
-                v_h = vy2 - vy1
+                # Use shared DriverRegionService to resolve occupant regions
+                regions = DriverRegionService.get_occupant_regions(vehicle["xyxy"], windshield_height_ratio=0.50, drive_side="RHD")
+                driver_box = regions["driver"]
+                passenger_box = regions["passenger"]
 
-                # Windshield boundary: top 50% of the vehicle box
-                wx1 = vx1
-                wy1 = vy1
-                wx2 = vx2
-                wy2 = vy1 + (v_h * 0.5)
-
-                w_w = wx2 - wx1
-
-                # Right Half (Driver) & Left Half (Front Passenger) - Right-hand drive setup
-                driver_box = [wx1 + w_w * 0.5, wy1, wx2, wy2]
-                passenger_box = [wx1, wy1, wx1 + w_w * 0.5, wy2]
 
                 # Evaluate occupants
                 driver_status, driver_conf = self._evaluate_region(driver_box, model_dets)
