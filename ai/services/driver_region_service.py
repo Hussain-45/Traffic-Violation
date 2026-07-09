@@ -85,6 +85,21 @@ class DriverRegionService:
         return [mx1, my1, mx2, my1 + (m_h * height_ratio)]
 
     @staticmethod
+    def get_rider_zones(motorcycle_xyxy: List[float]) -> Dict[str, List[float]]:
+        """
+        Splits a motorcycle bounding box into occupant zone and driver/passenger regions.
+        """
+        mx1, my1, mx2, my2 = motorcycle_xyxy
+        m_w = mx2 - mx1
+        m_h = my2 - my1
+        occ_y2 = my1 + (m_h * 0.60)
+        return {
+            "occupant_zone": [mx1, my1, mx2, occ_y2],
+            "driver_fallback": [mx1, my1, mx1 + (m_w * 0.50), occ_y2],
+            "passenger_fallback": [mx1 + (m_w * 0.50), my1, mx2, occ_y2]
+        }
+
+    @staticmethod
     def get_driver_region(vehicle_xyxy: List[float], windshield_height_ratio: float = 0.50, drive_side: str = "RHD") -> List[float]:
         """
         API to get the driver windshield region.

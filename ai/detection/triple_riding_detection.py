@@ -15,6 +15,7 @@ from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
 from ai.services.rider_association_service import rider_association_service
 from ai.services.trajectory_service import trajectory_service
+from ai.services.driver_region_service import DriverRegionService
 from shared.schemas import DetectionResult
 
 
@@ -116,11 +117,27 @@ class TripleRidingDetectionModule(BaseAIModule):
                     
                     track_age = state.track_age if state else 0
                     
-                    # 2. Perform validation gates
+                    # 2. Perform validation gates and position checks using DriverRegionService
+                    occupant_zones = DriverRegionService.get_rider_zones(box)
+                    occupant_zone_box = occupant_zones["occupant_zone"]
+                    
+                    # Validate that associated riders overlap with the occupant zone of the motorcycle
+                    valid_riders = 0
+                    if group:
+                        all_occupants = []
+                        if group.driver:
+                            all_occupants.append(group.driver)
+                        all_occupants.extend(group.passengers)
+                        
+                        for rider in all_occupants:
+                            overlap = self._calculate_box_overlap(rider.bounding_box, occupant_zone_box)
+                            if overlap > 0.05:  # overlaps with the upper 60% occupant zone of motorcycle
+                                valid_riders += 1
+                                
                     validated = (
                         group is not None and
                         conf >= min_assoc_conf and
-                        group.rider_count >= min_visible and
+                        valid_riders >= min_visible and
                         track_age >= min_track_age
                     )
 
@@ -261,6 +278,23 @@ class TripleRidingDetectionModule(BaseAIModule):
 
         cv2.rectangle(img, (tx, ty - h - 4), (tx + w + 4, ty + 2), color, -1)
         cv2.putText(img, label_text, (tx + 2, ty - 2), font, font_scale, (255, 255, 255), thickness, lineType=cv2.LINE_AA)
+
+    def _calculate_box_overlap(self, box_a: List[float], box_b: List[float]) -> float:
+        """Calculates area of intersection / area of box_a."""
+        ax1, ay1, ax2, ay2 = box_a
+        bx1, by1, bx2, by2 = box_b
+
+        ix1 = max(ax1, bx1)
+        iy1 = max(ay1, by1)
+        ix2 = min(ax2, bx2)
+        iy2 = min(ay2, by2)
+
+        if ix1 < ix2 and iy1 < iy2:
+            intersection_area = (ix2 - ix1) * (iy2 - iy1)
+            box_a_area = (ax2 - ax1) * (ay2 - ay1)
+            if box_a_area > 0:
+                return intersection_area / box_a_area
+        return 0.0
 
     def _cleanup_inactive_buffers(self, active_ids: List[int]) -> None:
         """Cleanup trackers that left the frame."""
