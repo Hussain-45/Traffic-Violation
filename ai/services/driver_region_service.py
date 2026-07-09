@@ -84,3 +84,71 @@ class DriverRegionService:
         m_h = my2 - my1
         return [mx1, my1, mx2, my1 + (m_h * height_ratio)]
 
+    @staticmethod
+    def get_driver_region(vehicle_xyxy: List[float], windshield_height_ratio: float = 0.50, drive_side: str = "RHD") -> List[float]:
+        """
+        API to get the driver windshield region.
+        """
+        return DriverRegionService.get_occupant_regions(vehicle_xyxy, windshield_height_ratio, drive_side)["driver"]
+
+    @staticmethod
+    def get_passenger_region(vehicle_xyxy: List[float], windshield_height_ratio: float = 0.50, drive_side: str = "RHD") -> List[float]:
+        """
+        API to get the front passenger windshield region.
+        """
+        return DriverRegionService.get_occupant_regions(vehicle_xyxy, windshield_height_ratio, drive_side)["passenger"]
+
+    @staticmethod
+    def get_head_region(
+        vehicle_xyxy: List[float], 
+        windshield_height_ratio: float = 0.50, 
+        drive_side: str = "RHD", 
+        head_height_ratio: float = 0.45
+    ) -> List[float]:
+        """
+        API to get the driver's head region inside the driver windshield box.
+        """
+        driver_box = DriverRegionService.get_driver_region(vehicle_xyxy, windshield_height_ratio, drive_side)
+        dx1, dy1, dx2, dy2 = driver_box
+        d_h = dy2 - dy1
+        return [dx1, dy1, dx2, dy1 + (d_h * head_height_ratio)]
+
+    @staticmethod
+    def get_hand_region(
+        vehicle_xyxy: List[float], 
+        windshield_height_ratio: float = 0.50, 
+        drive_side: str = "RHD", 
+        hand_height_ratio: float = 0.40
+    ) -> List[float]:
+        """
+        API to get the driver's hands region (lower part of driver windshield area).
+        """
+        driver_box = DriverRegionService.get_driver_region(vehicle_xyxy, windshield_height_ratio, drive_side)
+        dx1, dy1, dx2, dy2 = driver_box
+        d_h = dy2 - dy1
+        # Target the lower hand_height_ratio segment of the driver box
+        return [dx1, dy2 - (d_h * hand_height_ratio), dx2, dy2]
+
+    @staticmethod
+    def get_steering_wheel_region(
+        vehicle_xyxy: List[float], 
+        windshield_height_ratio: float = 0.50, 
+        drive_side: str = "RHD"
+    ) -> List[float]:
+        """
+        API to get steering wheel region (bottom 35% of the driver windshield box).
+        """
+        return DriverRegionService.get_hand_region(vehicle_xyxy, windshield_height_ratio, drive_side, hand_height_ratio=0.35)
+
+    @staticmethod
+    def get_dashboard_region(vehicle_xyxy: List[float], windshield_height_ratio: float = 0.50) -> List[float]:
+        """
+        API to get the dashboard region (spanning the segment below the windshield, e.g. 50% to 65% of vehicle height).
+        """
+        vx1, vy1, vx2, vy2 = vehicle_xyxy
+        v_h = vy2 - vy1
+        dy1 = vy1 + (v_h * windshield_height_ratio)
+        dy2 = vy1 + (v_h * (windshield_height_ratio + 0.15))
+        return [vx1, dy1, vx2, dy2]
+
+

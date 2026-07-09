@@ -125,9 +125,10 @@ def test_spatial_matching_logic(mock_helmet_module):
     assert "helmet_detection" in context.metadata
     h_data = context.metadata["helmet_detection"]
     assert 10 in h_data
-    assert h_data[10]["helmet"] is True
+    assert h_data[10]["status"] == "Helmet"
     assert 20 in h_data
-    assert h_data[20]["helmet"] is False
+    assert h_data[20]["status"] == "No Helmet"
+
     
     # Verify context detection counts updated
     assert context.detection_counts["helmet"] == 1

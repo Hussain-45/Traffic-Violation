@@ -15,6 +15,8 @@ from ultralytics import YOLO
 from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
 from ai.services.driver_region_service import DriverRegionService
+from shared.schemas import DetectionResult
+
 
 
 class MobilePhoneDetectionModule(BaseAIModule):
@@ -151,15 +153,18 @@ class MobilePhoneDetectionModule(BaseAIModule):
                 status_val, conf_val = self._evaluate_driver(driver_box, model_dets)
                 
                 track_id = vehicle["track_id"]
-                mobile_phone_stats[track_id] = {
-                    "tracking_id": track_id,
-                    "vehicle_class": vehicle["class_id"],
-                    "driver_region": driver_box,
-                    "status": status_val,
-                    "confidence": conf_val,
-                    "timestamp": context.timestamp,
-                    "frame_id": context.frame_id
-                }
+                det_res = DetectionResult(
+                    module_name="mobile_phone_detection",
+                    tracking_id=track_id,
+                    vehicle_class=vehicle["class_id"],
+                    region=driver_box,
+                    status=status_val,
+                    confidence=conf_val,
+                    timestamp=context.timestamp,
+                    frame_id=context.frame_id,
+                    metadata={}  # Module-specific metadata only
+                )
+                mobile_phone_stats[track_id] = det_res.to_dict()
 
                 # Update count metrics
                 if status_val == "Mobile Phone":

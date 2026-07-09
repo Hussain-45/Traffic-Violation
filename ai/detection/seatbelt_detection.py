@@ -16,6 +16,8 @@ from ultralytics import YOLO
 from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
 from ai.services.driver_region_service import DriverRegionService
+from shared.schemas import DetectionResult
+
 
 
 class SeatBeltDetectionModule(BaseAIModule):
@@ -155,12 +157,36 @@ class SeatBeltDetectionModule(BaseAIModule):
                 driver_status, driver_conf = self._evaluate_region(driver_box, model_dets)
                 passenger_status, passenger_conf = self._evaluate_region(passenger_box, model_dets)
 
-                # Track IDs state binding
+                # Track IDs state binding with standardized DetectionResult
                 track_id = vehicle["track_id"]
-                seat_belt_stats[track_id] = {
-                    "driver": {"status": driver_status, "confidence": driver_conf},
-                    "passenger": {"status": passenger_status, "confidence": passenger_conf}
-                }
+                
+                # Determine overall seatbelt status for the vehicle
+                if driver_status == "No Seat Belt" or passenger_status == "No Seat Belt":
+                    overall_status = "No Seat Belt"
+                elif driver_status == "Seat Belt" or passenger_status == "Seat Belt":
+                    overall_status = "Seat Belt"
+                else:
+                    overall_status = "Unknown"
+                    
+                windshield_box = DriverRegionService.get_windshield_region(vehicle["xyxy"])
+                
+                det_res = DetectionResult(
+                    module_name="seat_belt_detection",
+                    tracking_id=track_id,
+                    vehicle_class=vehicle["class_id"],
+                    region=windshield_box,
+                    status=overall_status,
+                    confidence=max(driver_conf, passenger_conf),
+                    timestamp=context.timestamp,
+                    frame_id=context.frame_id,
+                    metadata={
+                        "driver_status": driver_status,
+                        "driver_confidence": driver_conf,
+                        "passenger_status": passenger_status,
+                        "passenger_confidence": passenger_conf
+                    }
+                )
+                seat_belt_stats[track_id] = det_res.to_dict()
 
                 # Update global metrics counts
                 for status_val in [driver_status, passenger_status]:

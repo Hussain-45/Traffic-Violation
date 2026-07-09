@@ -16,6 +16,8 @@ from ultralytics import YOLO
 from ai.pipelines.base_module import BaseAIModule
 from ai.pipelines.pipeline_context import PipelineContext
 from ai.services.driver_region_service import DriverRegionService
+from shared.schemas import DetectionResult
+
 
 
 
@@ -108,11 +110,16 @@ class HelmetDetectionModule(BaseAIModule):
 
             helmet_detections = model_results[0].boxes
             
+            # Get confidence threshold from pipeline context config
+            conf_threshold = context.config.get("helmet_detection", {}).get("confidence_threshold", 0.50)
+
             # Group helmet detections
             helmets: List[Dict[str, Any]] = []
             for box in helmet_detections:
                 cls_idx = int(box.cls[0].item())
                 conf = float(box.conf[0].item())
+                if conf < conf_threshold:
+                    continue
                 xyxy = box.xyxy[0].tolist()
                 helmets.append({
                     "cls": cls_idx,  # 0 = helmet, 1 = no_helmet
@@ -225,11 +232,22 @@ class HelmetDetectionModule(BaseAIModule):
                     is_helmet = (best_match["cls"] == 0)
                     conf = best_match["conf"]
                     
-                    helmet_stats[track_id] = {
-                        "helmet": is_helmet,
-                        "confidence": conf,
-                        "bbox": best_match["xyxy"]
-                    }
+                    status_str = "Helmet" if is_helmet else "No Helmet"
+                    
+                    det_res = DetectionResult(
+                        module_name="helmet_detection",
+                        tracking_id=track_id,
+                        vehicle_class=3,  # 3 = motorcycle
+                        region=r["xyxy"],
+                        status=status_str,
+                        confidence=conf,
+                        timestamp=context.timestamp,
+                        frame_id=context.frame_id,
+                        metadata={
+                            "helmet_bbox": best_match["xyxy"]
+                        }
+                    )
+                    helmet_stats[track_id] = det_res.to_dict()
                     
                     if is_helmet:
                         results["helmet_count"] += 1

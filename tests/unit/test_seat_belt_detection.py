@@ -126,6 +126,7 @@ def test_windshield_subdivision_and_matching(mock_seatbelt_module):
     assert "seat_belt_detection" in context.metadata
     sb_data = context.metadata["seat_belt_detection"]
     assert 18 in sb_data
-    assert sb_data[18]["driver"]["status"] == "Seat Belt"
-    assert sb_data[18]["passenger"]["status"] == "No Seat Belt"
+    assert sb_data[18]["metadata"]["driver_status"] == "Seat Belt"
+    assert sb_data[18]["metadata"]["passenger_status"] == "No Seat Belt"
     assert 12 not in sb_data  # Motorcycle is ignored
+
