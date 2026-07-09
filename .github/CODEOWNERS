@@ -1,0 +1,25 @@
+# CODEOWNERS File
+# ================
+# Each line defines a path filter and the GitHub usernames/teams of owners.
+# Syntax: pattern @owner1 @owner2
+
+# Global owners (default owners for all files)
+*                                         @Hussain-45
+
+# AI modules & pipelines owners
+/ai/                                      @Hussain-45 @ai-leads-placeholder
+/models/                                  @Hussain-45 @ai-leads-placeholder
+/training/                                @Hussain-45 @ai-leads-placeholder
+
+# Backend API owners
+/backend/                                 @Hussain-45 @backend-leads-placeholder
+
+# Frontend App owners
+/frontend/                                @Hussain-45 @frontend-leads-placeholder
+
+# Configuration files owners
+/configs/                                 @Hussain-45
+
+# Documentation owners
+/docs/                                    @Hussain-45
+/README.md                                @Hussain-45
