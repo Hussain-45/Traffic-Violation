@@ -77,6 +77,9 @@ modules:
     minimum_crop_width: 30
     minimum_crop_height: 10
     minimum_visibility: 0.10
+    minimum_crop_sharpness: 10.0
+    minimum_aspect_ratio: 1.5
+    maximum_aspect_ratio: 6.5
     association_score: 0.35
     stable_confirmation_frames: 5
   ocr:

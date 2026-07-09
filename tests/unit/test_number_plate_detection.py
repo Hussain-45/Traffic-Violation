@@ -21,7 +21,9 @@ from shared.schemas.plate_association import PlateInfo
 
 @pytest.fixture
 def sample_frame():
-    return np.zeros((480, 640, 3), dtype=np.uint8)
+    # Returns a textured noise image to pass sharpness and visibility checks
+    np.random.seed(42)
+    return np.random.randint(100, 180, (480, 640, 3), dtype=np.uint8)
 
 
 @pytest.fixture

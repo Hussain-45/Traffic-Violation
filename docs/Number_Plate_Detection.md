@@ -6,17 +6,32 @@ The **Number Plate Detection** module runs YOLOv8 license plate detection on inc
 
 ## 1. Architecture
 
-The module occupies index 17 in the dynamic pipeline configuration:
+The overall pipeline execution flow follows the sequence below:
 
 ```
-            ByteTrack Vehicle Tracks
-                       │
-                       ▼
-          NumberPlateDetectionModule
-                       │
-                       ├─► Run YOLOv8 on Frame
-                       ├─► Validate and Crop Plate Boxes
-                       └─► PlateAssociationService (Ownership Match)
+            ┌───────────────────────┐
+            │   Vehicle Detection   │
+            └───────────┬───────────┘
+                        │
+                        ▼
+            ┌───────────────────────┐
+            │   Vehicle Tracking    │
+            └───────────┬───────────┘
+                        │
+                        ▼
+            ┌───────────────────────┐
+            │Number Plate Detection │
+            └───────────┬───────────┘
+                        │
+                        ▼
+            ┌───────────────────────┐
+            │PlateAssociationService│
+            └───────────┬───────────┘
+                        │
+                        ▼
+            ┌───────────────────────┐
+            │      OCR Module       │
+            └───────────────────────┘
 ```
 
 ---

@@ -109,6 +109,9 @@ class NumberPlateDetectionModule(BaseAIModule):
             min_plate_conf = self.config.get("minimum_plate_confidence", 0.50)
             min_w = self.config.get("minimum_crop_width", 30)
             min_h = self.config.get("minimum_crop_height", 10)
+            min_sharpness = self.config.get("minimum_crop_sharpness", 10.0)
+            min_aspect = self.config.get("minimum_aspect_ratio", 1.5)
+            max_aspect = self.config.get("maximum_aspect_ratio", 6.5)
 
             plates: List[Dict[str, Any]] = []
 
@@ -129,6 +132,10 @@ class NumberPlateDetectionModule(BaseAIModule):
 
                         # Validate crop dimensions
                         if pw >= min_w and ph >= min_h:
+                            aspect = pw / float(ph) if ph > 0 else 0.0
+                            if not (min_aspect <= aspect <= max_aspect):
+                                continue
+
                             # Safe crop boundary checks
                             img_h, img_w = frame.shape[:2]
                             cx1 = max(0, px1)
@@ -137,12 +144,23 @@ class NumberPlateDetectionModule(BaseAIModule):
                             cy2 = min(img_h, py2)
 
                             cropped = frame[cy1:cy2, cx1:cx2].copy()
-                            plates.append({
-                                "id": None,
-                                "bbox": xyxy,
-                                "conf": conf,
-                                "cropped_image": cropped
-                            })
+                            if cropped.size > 0:
+                                # Sharpness and visibility (mean brightness) checks
+                                gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+                                mean_brightness = float(np.mean(gray))
+                                if not (15.0 <= mean_brightness <= 240.0):
+                                    continue
+
+                                sharpness = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+                                if sharpness < min_sharpness:
+                                    continue
+
+                                plates.append({
+                                    "id": None,
+                                    "bbox": xyxy,
+                                    "conf": conf,
+                                    "cropped_image": cropped
+                                })
 
             # 2. Filter vehicle candidates from tracking detections
             # COCO classes: 2 = car, 3 = motorcycle, 5 = bus, 7 = truck
