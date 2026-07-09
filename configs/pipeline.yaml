@@ -38,8 +38,14 @@ modules:
     enabled: true
     confidence_threshold: 0.50
   wrong_side_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_track_age: 10
+    minimum_distance: 30.0
+    minimum_angle_difference: 135.0
+    minimum_history: 5
+    minimum_motion_confidence: 0.70
+    consecutive_confirmations: 3
   number_plate_detection:
     enabled: false
     confidence_threshold: 0.50

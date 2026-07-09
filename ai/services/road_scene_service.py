@@ -52,6 +52,35 @@ class RoadSceneService:
         return "incoming"
 
     @staticmethod
+    def get_lane_orientation(lane_id: int = 0) -> float:
+        """
+        Retrieves expected permitted lane travel heading angle in degrees (0 to 360).
+        By default, traffic is downward flow (heading angle = 90.0).
+        """
+        return 90.0
+
+    @staticmethod
+    def get_road_angle(lane_id: int = 0) -> float:
+        """
+        Retrieves expected lane road angle in degrees (placeholder).
+        """
+        return 90.0
+
+    @staticmethod
+    def get_driving_direction(lane_id: int = 0) -> str:
+        """
+        Retrieves permitted driving direction pattern (LHD or RHD).
+        """
+        return "RHD"
+
+    @staticmethod
+    def get_intersection_boundaries(frame_width: int, frame_height: int) -> List[float]:
+        """
+        Retrieves bounding boxes coordinates representing intersection boundaries.
+        """
+        return RoadSceneService.get_intersection_roi(frame_width, frame_height)
+
+    @staticmethod
     def get_perspective_matrix(frame_width: int, frame_height: int) -> Optional[Any]:
         """
         Retrieves perspective transformation matrix (placeholder).

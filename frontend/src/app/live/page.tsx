@@ -64,6 +64,15 @@ interface TrafficSignalStats {
   training_status: string;
 }
 
+interface WrongSideStats {
+  wrong_side_count: number;
+  correct_direction_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -79,6 +88,7 @@ interface CameraStatus {
   seat_belt_stats?: SeatBeltStats;
   mobile_phone_stats?: MobilePhoneStats;
   traffic_signal_stats?: TrafficSignalStats;
+  wrong_side_stats?: WrongSideStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -652,6 +662,52 @@ export default function LiveMonitoringPage() {
                   {
                     label: "Training Status",
                     val: status?.traffic_signal_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Wrong Side Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Wrong Side Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Wrong Side Count",
+                    val: status?.wrong_side_stats?.wrong_side_count ?? 0,
+                    cls: (status?.wrong_side_stats?.wrong_side_count ?? 0) > 0 ? "text-status-red font-semibold animate-pulse" : "text-status-green",
+                  },
+                  {
+                    label: "Correct Direction",
+                    val: status?.wrong_side_stats?.correct_direction_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.wrong_side_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.wrong_side_stats?.detection_status ?? "Inactive",
+                    cls: status?.wrong_side_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.wrong_side_stats?.model_status ?? "Not Loaded",
+                    cls: status?.wrong_side_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.wrong_side_stats?.training_status ?? "Not Trained",
                     cls: "text-slate-300",
                   },
                 ].map(({ label, val, cls }) => (

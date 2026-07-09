@@ -20,6 +20,10 @@ from ai.detection.helmet_detection import HelmetDetectionModule
 from ai.detection.seatbelt_detection import SeatBeltDetectionModule
 from ai.detection.mobile_phone_detection import MobilePhoneDetectionModule
 from ai.detection.traffic_signal_detection import TrafficSignalDetectionModule
+from ai.detection.wrong_side_detection import WrongSideDetectionModule
+from ai.services.trajectory_service import trajectory_service
+
+
 
 
 
@@ -101,6 +105,16 @@ class VehicleTrackingModule(BaseAIModule):
             tracked = tracking_service.update(context.raw_detections)
             context.tracked_detections = tracked
             results["active_tracks"] = tracking_service.get_stats()["active_tracks"]
+
+            # Update trajectory service with active track boxes
+            if tracked is not None and tracked.xyxy is not None and tracked.tracker_id is not None:
+                active_ids = []
+                for box, track_id in zip(tracked.xyxy.tolist(), tracked.tracker_id.tolist()):
+                    trajectory_service.update_trajectory(track_id, box, context.timestamp)
+                    active_ids.append(track_id)
+                # Cleanup lost trajectories
+                trajectory_service.clean_inactive_ids(active_ids)
+
         except Exception as e:
             logger.error(f"VehicleTrackingModule error: {e}")
             errors.append({"module": "vehicle_tracking", "message": str(e)})
@@ -171,7 +185,7 @@ class AIModuleRegistry:
         self.register("phone_detection", MobilePhoneDetectionModule())
         self.register("traffic_signal_detection", TrafficSignalDetectionModule())
 
-        self.register("wrong_side_detection", MockAIModule("wrong_side_detection"))
+        self.register("wrong_side_detection", WrongSideDetectionModule())
         self.register("number_plate_detection", MockAIModule("number_plate_detection"))
         self.register("ocr", MockAIModule("ocr"))
         self.register("violation_engine", MockAIModule("violation_engine"))

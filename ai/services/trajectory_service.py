@@ -240,3 +240,8 @@ class TrajectoryService:
         self.trajectories.clear()
         self.track_ages.clear()
         self.motion_cache.clear()
+
+
+# Global singleton instance
+trajectory_service = TrajectoryService()
+

@@ -42,6 +42,10 @@ def get_camera_status():
     ts_enabled = "traffic_signal_detection" in pipeline_manager.enabled_modules
     ts_model_loaded = ts_mod is not None and ts_mod.health()
     ts_weights_exist = os.path.exists("models/trained/traffic_light_best.pt")
+
+    ws_mod = module_registry.get("wrong_side_detection")
+    ws_enabled = "wrong_side_detection" in pipeline_manager.enabled_modules
+    ws_model_loaded = ws_mod is not None and ws_mod.health()
     
     return {
         "connected": camera_manager.is_connected,
@@ -85,6 +89,14 @@ def get_camera_status():
             "detection_status": "Active" if ts_enabled else "Inactive",
             "model_status": "Loaded" if ts_model_loaded else "Not Loaded",
             "training_status": "Pre-trained Weights Available" if ts_weights_exist else "Not Trained"
+        },
+        "wrong_side_stats": {
+            "wrong_side_count": camera_manager.latest_counts.get("wrong_side", 0),
+            "correct_direction_count": camera_manager.latest_counts.get("correct_direction", 0),
+            "unknown_count": camera_manager.latest_counts.get("wrong_side_unknown", 0),
+            "detection_status": "Active" if ws_enabled else "Inactive",
+            "model_status": "Loaded" if ws_model_loaded else "Not Loaded",
+            "training_status": "Rule-based (No Model Required)"
         }
     }
 
