@@ -1,0 +1,121 @@
+"""
+Report Template Service Layer
+=============================
+Standardizes structural text layouts, cover pages, statistics tables,
+and footer indicators for PDF/Text compiled reports.
+"""
+from typing import Dict, Any, List
+import datetime
+
+
+class ReportTemplateService:
+    """
+    Houses layouts, cover page definitions, and parameters for system report templates.
+    """
+
+    def get_available_templates(self) -> List[Dict[str, Any]]:
+        """Returns the list of supported templates and parameters."""
+        return [
+            {
+                "id": "daily_summary",
+                "name": "Daily Operations Report",
+                "description": "24-hour summary of violation counts, active cameras, and system performance.",
+                "supported_formats": ["pdf", "csv", "xlsx", "json"],
+                "parameters": ["start_date", "camera_id"]
+            },
+            {
+                "id": "weekly_trends",
+                "name": "Weekly Traffic & Violation Trends",
+                "description": "7-day trend analysis mapping vehicle classes and repeat offender license plates.",
+                "supported_formats": ["pdf", "xlsx", "json"],
+                "parameters": ["start_date"]
+            },
+            {
+                "id": "monthly_audit",
+                "name": "Monthly Compliance Audit",
+                "description": "Comprehensive report of total fines, payment states, and email delivery statistics.",
+                "supported_formats": ["pdf", "xlsx"],
+                "parameters": ["start_date", "status"]
+            },
+            {
+                "id": "system_health",
+                "name": "System Health & Performance Diagnostics",
+                "description": "Detailed report on AI model processing latency, database connections, and camera uptime.",
+                "supported_formats": ["pdf", "json"],
+                "parameters": []
+            }
+        ]
+
+    def render_cover_page(self, title: str, report_type: str, start: str, end: str) -> str:
+        """Compiles a professional ASCII-art cover page for document-style PDF/text layouts."""
+        line = "=" * 75
+        now_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        
+        return f"""
+{line}
+                  SMART TRAFFIC VIOLATION DETECTION SYSTEM
+                             OFFICIAL REPORT
+{line}
+
+REPORT TITLE      : {title}
+REPORT TYPE       : {report_type.upper()}
+DATE RANGE        : {start} to {end}
+GENERATED AT      : {now_str} UTC
+PRODUCED BY       : Traffic Violation AI Pipeline
+
+{line}
+   CONFIDENTIALITY NOTICE: The information contained in this report is
+   for official municipal auditing purposes only.
+{line}
+\n"""
+
+    def render_kpis_table(self, kpis: Dict[str, Any]) -> str:
+        """Compiles a formatted KPI stats grid."""
+        return f"""
+EXECUTIVE KPI SUMMARY:
+---------------------------------------------------------------------------
+Total Violations Flagged : {kpis.get('total_violations', 0):<15} | Active Cameras   : {kpis.get('active_cameras', 0)}
+Total Vehicles Scanned   : {kpis.get('total_vehicles', 0):<15} | Database Status  : {kpis.get('db_health', 'unknown').upper()}
+Total Fines Assessed     : INR {kpis.get('total_fines', 0.0):<11.2f} | Average AI Conf  : {kpis.get('avg_confidence', 0.0):.2%}
+System Diagnostic Uptime : {kpis.get('system_uptime', '99.9%'):<15} |
+---------------------------------------------------------------------------
+\n"""
+
+    def render_distributions(self, violations: List[Dict[str, Any]], vehicles: List[Dict[str, Any]]) -> str:
+        """Formats vehicle and violation distributions side by side."""
+        lines = []
+        lines.append("DISTRIBUTION SUMMARIES:")
+        lines.append("---------------------------------------------------------------------------")
+        lines.append(f"{'Violation Category':<28} | {'Count':<6} || {'Vehicle Class':<20} | {'Count':<6}")
+        lines.append("---------------------------------------------------------------------------")
+        
+        max_len = max(len(violations), len(vehicles))
+        for i in range(max_len):
+            v_str = ""
+            if i < len(violations):
+                v_str = f"{violations[i]['name'][:28]:<28} | {violations[i]['value']:<6}"
+            else:
+                v_str = f"{'':<28} | {'':<6}"
+                
+            vh_str = ""
+            if i < len(vehicles):
+                vh_str = f"{vehicles[i]['name'][:20]:<20} | {vehicles[i]['value']:<6}"
+            else:
+                vh_str = f"{'':<20} | {'':<6}"
+                
+            lines.append(f"{v_str} || {vh_str}")
+            
+        lines.append("---------------------------------------------------------------------------")
+        return "\n".join(lines) + "\n\n"
+
+    def render_footer(self, page_num: int = 1) -> str:
+        """Generates a standard document footer."""
+        line = "-" * 75
+        return f"""
+{line}
+Generated by Traffic Violation AI   |   Page {page_num}   |   Confidential
+{line}"""
+
+
+# Singleton template service instance
+report_template_service = ReportTemplateService()
