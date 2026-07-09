@@ -163,3 +163,5 @@ class Notification(Base):
 
 
 from backend.app.models.email_log_model import EmailLogModel
+from backend.app.models.analytics_model import AnalyticsReportModel
+from backend.app.models.evidence_model import EvidenceModel
