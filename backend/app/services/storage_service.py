@@ -45,6 +45,8 @@ class LocalStorageAdapter(StorageAdapter):
     def _get_absolute_path(self, file_path: str) -> str:
         # Strip leading slashes to prevent absolute path breaking base_dir join
         cleaned_path = file_path.lstrip("/").lstrip("\\")
+        if cleaned_path.startswith("data/") or cleaned_path.startswith("data\\"):
+            cleaned_path = cleaned_path[5:]
         return os.path.join(self.base_dir, cleaned_path)
 
     def save(self, file_path: str, data: bytes) -> str:

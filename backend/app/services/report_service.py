@@ -101,15 +101,16 @@ class ReportService:
 
             # 3. Formulate output bytes
             raw_bytes = export_service.compile(context, db_report.format)
-
-            # 4. Cryptographic checksum calculation
-            checksum = hashlib.sha256(raw_bytes).hexdigest()
-            db_report.checksum = checksum
             
             # Re-compile to include checksum in header (for PDF format)
             if db_report.format == "pdf":
-                context.checksum = checksum
+                temp_checksum = hashlib.sha256(raw_bytes).hexdigest()
+                context.checksum = temp_checksum
                 raw_bytes = export_service.compile(context, db_report.format)
+
+            # 4. Final Cryptographic checksum calculation of saved bytes
+            checksum = hashlib.sha256(raw_bytes).hexdigest()
+            db_report.checksum = checksum
 
             # 5. Persist to storage using swappable StorageAdapter
             self.storage.save(db_report.file_path, raw_bytes)

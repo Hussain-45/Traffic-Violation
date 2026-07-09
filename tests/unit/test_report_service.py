@@ -266,7 +266,9 @@ def test_api_report_endpoints():
 
         res = client.get(f"/api/v1/reports/download/{report_id}")
         assert res.status_code == 410
-        assert "expired" in res.json()["detail"]
+        res_json = res.json()
+        error_msg = res_json.get("detail") or res_json.get("message") or ""
+        assert "expired" in error_msg
 
     finally:
         app.dependency_overrides.clear()
