@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppProvider } from "@/lib/api";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { Shell } from "@/components/layout/Shell";
+import { AuthProvider } from "@/components/auth/AuthContext";
 
 export const metadata: Metadata = {
   title: "Traffic Violation AI",
@@ -19,7 +20,9 @@ export default function RootLayout({
       <body className="h-full bg-navy-darker">
         <ErrorBoundary>
           <AppProvider>
-            <Shell>{children}</Shell>
+            <AuthProvider>
+              <Shell>{children}</Shell>
+            </AuthProvider>
           </AppProvider>
         </ErrorBoundary>
       </body>

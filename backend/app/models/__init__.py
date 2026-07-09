@@ -3,21 +3,10 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boo
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    full_name = Column(String, nullable=False)
-    password_hash = Column(String, nullable=False)
-    role = Column(String, default="officer")  # admin, officer
-    status = Column(String, default="active")  # active, inactive
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-
-    logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
-    reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
-    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+from backend.app.models.user_model import User
+from backend.app.models.role_model import Role
+from backend.app.models.permission_model import Permission
+from backend.app.models.session_model import SessionModel
 
 
 class Location(Base):
