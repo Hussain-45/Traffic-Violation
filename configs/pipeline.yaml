@@ -46,6 +46,12 @@ modules:
     minimum_history: 5
     minimum_motion_confidence: 0.70
     consecutive_confirmations: 3
+  rider_association:
+    minimum_iou: 0.15
+    maximum_distance: 150.0
+    association_score_threshold: 0.40
+    minimum_confidence: 0.50
+    maximum_passengers: 3
   number_plate_detection:
     enabled: false
     confidence_threshold: 0.50
