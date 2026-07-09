@@ -24,6 +24,7 @@ from ai.detection.wrong_side_detection import WrongSideDetectionModule
 from ai.detection.triple_riding_detection import TripleRidingDetectionModule
 from ai.detection.number_plate_detection import NumberPlateDetectionModule
 from ai.ocr.license_plate_ocr import LicensePlateOCRModule
+from ai.detection.violation_engine_module import ViolationEngineModule
 from ai.services.trajectory_service import trajectory_service
 
 from ai.services.rider_association_service import rider_association_service
@@ -212,7 +213,7 @@ class AIModuleRegistry:
         self.register("triple_riding_detection", TripleRidingDetectionModule())
         self.register("number_plate_detection", NumberPlateDetectionModule())
         self.register("ocr", LicensePlateOCRModule())
-        self.register("violation_engine", MockAIModule("violation_engine"))
+        self.register("violation_engine", ViolationEngineModule())
 
     def register(self, key: str, module: BaseAIModule):
         """Add or overwrite a module in the registry."""

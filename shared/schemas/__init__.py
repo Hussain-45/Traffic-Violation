@@ -5,6 +5,7 @@ from shared.schemas.rider_group import RiderInfo, MotorcycleGroup
 from shared.schemas.plate_association import PlateInfo, VehiclePlateAssociation
 from shared.schemas.plate_recognition import OCRCandidate, PlateRecognitionState
 from shared.schemas.violation_context import ViolationHistoryEntry, VehicleViolationContext
+from shared.schemas.violation_record import ViolationRecord
 
 
 

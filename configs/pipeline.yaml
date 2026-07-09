@@ -99,8 +99,22 @@ modules:
     gpu: false
     language: "en"
   violation_engine:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_decision_confidence: 0.50
+    helmet_threshold: 0.50
+    seatbelt_threshold: 0.50
+    phone_threshold: 0.50
+    wrong_side_threshold: 0.50
+    signal_threshold: 0.50
+    triple_riding_threshold: 0.50
+    severities:
+      helmet: "Medium"
+      seatbelt: "Low"
+      phone: "Medium"
+      wrong_side: "High"
+      signal: "Critical"
+      triple_riding: "High"
   violation_aggregation:
     history_length: 20
     minimum_confidence: 0.50
