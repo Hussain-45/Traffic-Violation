@@ -17,6 +17,22 @@ from ai.pipelines.pipeline_context import PipelineContext
 from backend.app.services.inference_service import inference_service
 from backend.app.services.tracking_service import tracking_service
 from ai.detection.helmet_detection import HelmetDetectionModule
+from ai.detection.seatbelt_detection import SeatBeltDetectionModule
+from ai.detection.mobile_phone_detection import MobilePhoneDetectionModule
+from ai.detection.traffic_signal_detection import TrafficSignalDetectionModule
+from ai.detection.wrong_side_detection import WrongSideDetectionModule
+from ai.detection.triple_riding_detection import TripleRidingDetectionModule
+from ai.detection.number_plate_detection import NumberPlateDetectionModule
+from ai.ocr.license_plate_ocr import LicensePlateOCRModule
+from ai.detection.violation_engine_module import ViolationEngineModule
+from ai.services.trajectory_service import trajectory_service
+
+from ai.services.rider_association_service import rider_association_service
+
+
+
+
+
 
 
 class VehicleDetectionModule(BaseAIModule):
@@ -97,6 +113,32 @@ class VehicleTrackingModule(BaseAIModule):
             tracked = tracking_service.update(context.raw_detections)
             context.tracked_detections = tracked
             results["active_tracks"] = tracking_service.get_stats()["active_tracks"]
+
+            # Update trajectory service with active track boxes
+            if tracked is not None and tracked.xyxy is not None and tracked.tracker_id is not None:
+                active_ids = []
+                motorcycles = []
+                riders = []
+                for i in range(len(tracked)):
+                    box = tracked.xyxy[i].tolist()
+                    track_id = int(tracked.tracker_id[i])
+                    cls_idx = int(tracked.class_id[i])
+                    conf = float(tracked.confidence[i])
+
+                    trajectory_service.update_trajectory(track_id, box, context.timestamp)
+                    active_ids.append(track_id)
+
+                    if cls_idx == 3:  # motorcycle
+                        motorcycles.append({"id": track_id, "bbox": box, "conf": conf})
+                    elif cls_idx == 0:  # person
+                        riders.append({"id": track_id, "bbox": box, "conf": conf})
+
+                # Perform the one association pass per frame
+                rider_association_service.associate_riders(motorcycles, riders, context.timestamp)
+
+                # Cleanup lost trajectories
+                trajectory_service.clean_inactive_ids(active_ids)
+
         except Exception as e:
             logger.error(f"VehicleTrackingModule error: {e}")
             errors.append({"module": "vehicle_tracking", "message": str(e)})
@@ -163,13 +205,15 @@ class AIModuleRegistry:
         self.register("vehicle_detection", VehicleDetectionModule())
         self.register("vehicle_tracking", VehicleTrackingModule())
         self.register("helmet_detection", HelmetDetectionModule())
-        self.register("seat_belt_detection", MockAIModule("seat_belt_detection"))
-        self.register("phone_detection", MockAIModule("phone_detection"))
-        self.register("traffic_signal_detection", MockAIModule("traffic_signal_detection"))
-        self.register("wrong_side_detection", MockAIModule("wrong_side_detection"))
-        self.register("number_plate_detection", MockAIModule("number_plate_detection"))
-        self.register("ocr", MockAIModule("ocr"))
-        self.register("violation_engine", MockAIModule("violation_engine"))
+        self.register("seat_belt_detection", SeatBeltDetectionModule())
+        self.register("phone_detection", MobilePhoneDetectionModule())
+        self.register("traffic_signal_detection", TrafficSignalDetectionModule())
+
+        self.register("wrong_side_detection", WrongSideDetectionModule())
+        self.register("triple_riding_detection", TripleRidingDetectionModule())
+        self.register("number_plate_detection", NumberPlateDetectionModule())
+        self.register("ocr", LicensePlateOCRModule())
+        self.register("violation_engine", ViolationEngineModule())
 
     def register(self, key: str, module: BaseAIModule):
         """Add or overwrite a module in the registry."""

@@ -19,3 +19,82 @@ helmet:
     x:
       weights: "models/trained/helmet_x.pt"
       description: "YOLOv8 Extra Large - Maximum accuracy, high latency"
+
+seat_belt:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/seatbelt_best.pt"
+      description: "YOLOv8 Nano Seatbelt - Ultra fast, low memory"
+    s:
+      weights: "models/trained/seatbelt_s.pt"
+      description: "YOLOv8 Small Seatbelt"
+    m:
+      weights: "models/trained/seatbelt_m.pt"
+      description: "YOLOv8 Medium Seatbelt"
+    l:
+      weights: "models/trained/seatbelt_l.pt"
+      description: "YOLOv8 Large Seatbelt"
+    x:
+      weights: "models/trained/seatbelt_x.pt"
+      description: "YOLOv8 Extra Large Seatbelt"
+
+mobile_phone:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/mobile_best.pt"
+      description: "YOLOv8 Nano Mobile - Ultra fast, low memory"
+    s:
+      weights: "models/trained/mobile_s.pt"
+      description: "YOLOv8 Small Mobile"
+    m:
+      weights: "models/trained/mobile_m.pt"
+      description: "YOLOv8 Medium Mobile"
+    l:
+      weights: "models/trained/mobile_l.pt"
+      description: "YOLOv8 Large Mobile"
+    x:
+      weights: "models/trained/mobile_x.pt"
+      description: "YOLOv8 Extra Large Mobile"
+
+traffic_signal:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/traffic_light_best.pt"
+      description: "YOLOv8 Nano Traffic Light - Ultra fast, low memory"
+    s:
+      weights: "models/trained/traffic_light_s.pt"
+      description: "YOLOv8 Small Traffic Light"
+    m:
+      weights: "models/trained/traffic_light_m.pt"
+      description: "YOLOv8 Medium Traffic Light"
+    l:
+      weights: "models/trained/traffic_light_l.pt"
+      description: "YOLOv8 Large Traffic Light"
+    x:
+      weights: "models/trained/traffic_light_x.pt"
+      description: "YOLOv8 Extra Large Traffic Light"
+
+number_plate:
+  active_size: "n"  # Options: n, s, m, l, x
+  sizes:
+    n:
+      weights: "models/trained/number_plate_best.pt"
+      description: "YOLOv8 Nano Number Plate - Ultra fast, low memory"
+    s:
+      weights: "models/trained/number_plate_s.pt"
+      description: "YOLOv8 Small Number Plate"
+    m:
+      weights: "models/trained/number_plate_m.pt"
+      description: "YOLOv8 Medium Number Plate"
+    l:
+      weights: "models/trained/number_plate_l.pt"
+      description: "YOLOv8 Large Number Plate"
+    x:
+      weights: "models/trained/number_plate_x.pt"
+      description: "YOLOv8 Extra Large Number Plate"
+
+
+

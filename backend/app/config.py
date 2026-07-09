@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     AI_CONFIDENCE_THRESHOLD: float = 0.45
     SPEED_LIMIT_KMH: float = 60.0
 
+    # SMTP Configuration
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_EMAIL: str = os.getenv("SMTP_EMAIL", "coderazze95@gmail.com")
+    SMTP_APP_PASSWORD: str = os.getenv("SMTP_APP_PASSWORD", "")
+    SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", "Traffic Violation AI <coderazze95@gmail.com>")
+    EMAIL_MAX_RETRIES: int = int(os.getenv("EMAIL_MAX_RETRIES", "3"))
+    EMAIL_RETRY_DELAY: float = float(os.getenv("EMAIL_RETRY_DELAY", "2.0"))
+
     class Config:
         case_sensitive = True
 

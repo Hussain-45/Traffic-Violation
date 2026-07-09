@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # 🐍 FastAPI Backend service
+  backend:
+    build:
+      context: ../
+      dockerfile: deployment/docker/Dockerfile.backend
+    container_name: stvds-prod-backend
+    expose:
+      - "8000"
+    volumes:
+      - data-volume:/workspace/data
+      - logs-volume:/workspace/logs
+      - config-volume:/workspace/configs
+    environment:
+      - PROJECT_NAME=Smart Traffic Monitor
+      - UPLOAD_DIR=data/uploads
+      - ACTIVE_AI_AVAILABLE=True
+      - ENV_STATE=production
+    networks:
+      - internal-net
+    restart: always
+
+  # ⚛️ Next.js Static compile served via Nginx
+  frontend:
+    build:
+      context: ../
+      dockerfile: deployment/docker/Dockerfile.frontend
+    container_name: stvds-prod-frontend
+    expose:
+      - "80"
+    networks:
+      - public-net
+    restart: always
+
+  # 🛡️ Front Proxy (Nginx) for routing and TLS termination
+  nginx:
+    image: nginx:alpine
+    container_name: stvds-prod-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+      - data-volume:/usr/share/nginx/html/data:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - public-net
+      - internal-net
+    restart: always
+
+volumes:
+  data-volume:
+    driver: local
+  logs-volume:
+    driver: local
+  config-volume:
+    driver: local
+
+networks:
+  public-net:
+    driver: bridge
+  internal-net:
+    driver: bridge

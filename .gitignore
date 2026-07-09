@@ -49,5 +49,6 @@ weights/
 *.sqlite
 yolov8n.pt
 stvds_backend.log
+outputs/
 
 

@@ -26,7 +26,39 @@ def get_camera_status():
     helmet_mod = module_registry.get("helmet_detection")
     helmet_enabled = "helmet_detection" in pipeline_manager.enabled_modules
     helmet_model_loaded = helmet_mod is not None and helmet_mod.health()
-    weights_exist = os.path.exists("models/trained/helmet_best.pt")
+    helmet_weights_exist = os.path.exists("models/trained/helmet_best.pt")
+
+    sb_mod = module_registry.get("seat_belt_detection")
+    sb_enabled = "seat_belt_detection" in pipeline_manager.enabled_modules
+    sb_model_loaded = sb_mod is not None and sb_mod.health()
+    sb_weights_exist = os.path.exists("models/trained/seatbelt_best.pt")
+
+    mp_mod = module_registry.get("phone_detection")
+    mp_enabled = "phone_detection" in pipeline_manager.enabled_modules
+    mp_model_loaded = mp_mod is not None and mp_mod.health()
+    mp_weights_exist = os.path.exists("models/trained/mobile_best.pt")
+
+    ts_mod = module_registry.get("traffic_signal_detection")
+    ts_enabled = "traffic_signal_detection" in pipeline_manager.enabled_modules
+    ts_model_loaded = ts_mod is not None and ts_mod.health()
+    ts_weights_exist = os.path.exists("models/trained/traffic_light_best.pt")
+
+    ws_mod = module_registry.get("wrong_side_detection")
+    ws_enabled = "wrong_side_detection" in pipeline_manager.enabled_modules
+    ws_model_loaded = ws_mod is not None and ws_mod.health()
+
+    tr_mod = module_registry.get("triple_riding_detection")
+    tr_enabled = "triple_riding_detection" in pipeline_manager.enabled_modules
+    tr_model_loaded = tr_mod is not None and tr_mod.health()
+
+    np_mod = module_registry.get("number_plate_detection")
+    np_enabled = "number_plate_detection" in pipeline_manager.enabled_modules
+    np_model_loaded = np_mod is not None and np_mod.health()
+    np_weights_exist = os.path.exists("models/trained/number_plate_best.pt")
+
+    ocr_mod = module_registry.get("ocr")
+    ocr_enabled = "ocr" in pipeline_manager.enabled_modules
+    ocr_model_loaded = ocr_mod is not None and ocr_mod.health()
     
     return {
         "connected": camera_manager.is_connected,
@@ -44,7 +76,67 @@ def get_camera_status():
             "no_helmet_count": camera_manager.latest_counts.get("no_helmet", 0),
             "detection_status": "Active" if helmet_enabled else "Inactive",
             "model_status": "Loaded" if helmet_model_loaded else "Not Loaded",
-            "training_status": "Pre-trained Weights Available" if weights_exist else "Not Trained"
+            "training_status": "Pre-trained Weights Available" if helmet_weights_exist else "Not Trained"
+        },
+        "seat_belt_stats": {
+            "seat_belt_count": camera_manager.latest_counts.get("seat_belt", 0),
+            "no_seat_belt_count": camera_manager.latest_counts.get("no_seat_belt", 0),
+            "unknown_count": camera_manager.latest_counts.get("unknown_seat_belt", 0),
+            "detection_status": "Active" if sb_enabled else "Inactive",
+            "model_status": "Loaded" if sb_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if sb_weights_exist else "Not Trained"
+        },
+        "mobile_phone_stats": {
+            "phone_count": camera_manager.latest_counts.get("mobile_phone", 0),
+            "no_phone_count": camera_manager.latest_counts.get("no_mobile_phone", 0),
+            "unknown_count": camera_manager.latest_counts.get("unknown_mobile_phone", 0),
+            "detection_status": "Active" if mp_enabled else "Inactive",
+            "model_status": "Loaded" if mp_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if mp_weights_exist else "Not Trained"
+        },
+        "traffic_signal_stats": {
+            "red_count": camera_manager.latest_counts.get("traffic_red", 0),
+            "yellow_count": camera_manager.latest_counts.get("traffic_yellow", 0),
+            "green_count": camera_manager.latest_counts.get("traffic_green", 0),
+            "unknown_count": camera_manager.latest_counts.get("traffic_unknown", 0),
+            "detection_status": "Active" if ts_enabled else "Inactive",
+            "model_status": "Loaded" if ts_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if ts_weights_exist else "Not Trained"
+        },
+        "wrong_side_stats": {
+            "wrong_side_count": camera_manager.latest_counts.get("wrong_side", 0),
+            "correct_direction_count": camera_manager.latest_counts.get("correct_direction", 0),
+            "unknown_count": camera_manager.latest_counts.get("wrong_side_unknown", 0),
+            "detection_status": "Active" if ws_enabled else "Inactive",
+            "model_status": "Loaded" if ws_model_loaded else "Not Loaded",
+            "training_status": "Rule-based (No Model Required)"
+        },
+        "triple_riding_stats": {
+            "single_rider_count": camera_manager.latest_counts.get("single_rider", 0),
+            "double_riding_count": camera_manager.latest_counts.get("double_riding", 0),
+            "triple_riding_count": camera_manager.latest_counts.get("triple_riding", 0),
+            "unknown_count": camera_manager.latest_counts.get("triple_unknown", 0),
+            "detection_status": "Active" if tr_enabled else "Inactive",
+            "model_status": "Loaded" if tr_model_loaded else "Not Loaded",
+            "association_status": "Active" if tr_enabled else "Inactive"
+        },
+        "number_plate_stats": {
+            "detecting_count": camera_manager.latest_counts.get("anpr_detecting", 0),
+            "stable_count": camera_manager.latest_counts.get("anpr_stable", 0),
+            "unknown_count": camera_manager.latest_counts.get("anpr_unknown", 0),
+            "crop_ready_count": camera_manager.latest_counts.get("anpr_crops", 0),
+            "detection_status": "Active" if np_enabled else "Inactive",
+            "model_status": "Loaded" if np_model_loaded else "Not Loaded",
+            "training_status": "Pre-trained Weights Available" if np_weights_exist else "Not Trained"
+        },
+        "ocr_stats": {
+            "requests_count": camera_manager.latest_counts.get("ocr_requests", 0),
+            "verified_count": camera_manager.latest_counts.get("ocr_verified", 0),
+            "rejected_count": camera_manager.latest_counts.get("ocr_rejected", 0),
+            "avg_confidence": camera_manager.latest_counts.get("ocr_avg_conf", 0),
+            "detection_status": "Active" if ocr_enabled else "Inactive",
+            "model_status": "Loaded" if ocr_model_loaded else "Not Loaded",
+            "engine_name": getattr(ocr_mod, "engine_name", "easyocr") if ocr_mod else "easyocr"
         }
     }
 

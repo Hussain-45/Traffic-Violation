@@ -36,6 +36,73 @@ interface HelmetStats {
   training_status: string;
 }
 
+interface SeatBeltStats {
+  seat_belt_count: number;
+  no_seat_belt_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
+interface MobilePhoneStats {
+  phone_count: number;
+  no_phone_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
+interface TrafficSignalStats {
+  red_count: number;
+  yellow_count: number;
+  green_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
+interface WrongSideStats {
+  wrong_side_count: number;
+  correct_direction_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
+interface TripleRidingStats {
+  single_rider_count: number;
+  double_riding_count: number;
+  triple_riding_count: number;
+  unknown_count: number;
+  detection_status: string;
+  model_status: string;
+  association_status: string;
+}
+
+interface NumberPlateStats {
+  detecting_count: number;
+  stable_count: number;
+  unknown_count: number;
+  crop_ready_count: number;
+  detection_status: string;
+  model_status: string;
+  training_status: string;
+}
+
+interface OCRStats {
+  requests_count: number;
+  verified_count: number;
+  rejected_count: number;
+  avg_confidence: number;
+  detection_status: string;
+  model_status: string;
+  engine_name: string;
+}
+
 interface CameraStatus {
   connected: boolean;
   fps: number;
@@ -48,6 +115,13 @@ interface CameraStatus {
   detections: Detections;
   tracking: TrackingStats;
   helmet_stats?: HelmetStats;
+  seat_belt_stats?: SeatBeltStats;
+  mobile_phone_stats?: MobilePhoneStats;
+  traffic_signal_stats?: TrafficSignalStats;
+  wrong_side_stats?: WrongSideStats;
+  triple_riding_stats?: TripleRidingStats;
+  number_plate_stats?: NumberPlateStats;
+  ocr_stats?: OCRStats;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -479,6 +553,338 @@ export default function LiveMonitoringPage() {
                     label: "Training Status",
                     val: status?.helmet_stats?.training_status ?? "Not Trained",
                     cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seat Belt Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Seat Belt Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Seat Belt Count",
+                    val: status?.seat_belt_stats?.seat_belt_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "No Seat Belt Count",
+                    val: status?.seat_belt_stats?.no_seat_belt_count ?? 0,
+                    cls: (status?.seat_belt_stats?.no_seat_belt_count ?? 0) > 0 ? "text-status-red font-semibold" : "text-slate-400",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.seat_belt_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.seat_belt_stats?.detection_status ?? "Inactive",
+                    cls: status?.seat_belt_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.seat_belt_stats?.model_status ?? "Not Loaded",
+                    cls: status?.seat_belt_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.seat_belt_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Mobile Phone Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Mobile Phone Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Phone Count",
+                    val: status?.mobile_phone_stats?.phone_count ?? 0,
+                    cls: (status?.mobile_phone_stats?.phone_count ?? 0) > 0 ? "text-status-red font-semibold" : "text-status-green",
+                  },
+                  {
+                    label: "No Phone Count",
+                    val: status?.mobile_phone_stats?.no_phone_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.mobile_phone_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.mobile_phone_stats?.detection_status ?? "Inactive",
+                    cls: status?.mobile_phone_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.mobile_phone_stats?.model_status ?? "Not Loaded",
+                    cls: status?.mobile_phone_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.mobile_phone_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Traffic Signal Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Traffic Signal Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Red Signals",
+                    val: status?.traffic_signal_stats?.red_count ?? 0,
+                    cls: "text-status-red font-semibold",
+                  },
+                  {
+                    label: "Yellow Signals",
+                    val: status?.traffic_signal_stats?.yellow_count ?? 0,
+                    cls: "text-brand-orange font-semibold",
+                  },
+                  {
+                    label: "Green Signals",
+                    val: status?.traffic_signal_stats?.green_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.traffic_signal_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.traffic_signal_stats?.detection_status ?? "Inactive",
+                    cls: status?.traffic_signal_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.traffic_signal_stats?.model_status ?? "Not Loaded",
+                    cls: status?.traffic_signal_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.traffic_signal_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Wrong Side Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Wrong Side Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Wrong Side Count",
+                    val: status?.wrong_side_stats?.wrong_side_count ?? 0,
+                    cls: (status?.wrong_side_stats?.wrong_side_count ?? 0) > 0 ? "text-status-red font-semibold animate-pulse" : "text-status-green",
+                  },
+                  {
+                    label: "Correct Direction",
+                    val: status?.wrong_side_stats?.correct_direction_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.wrong_side_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.wrong_side_stats?.detection_status ?? "Inactive",
+                    cls: status?.wrong_side_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.wrong_side_stats?.model_status ?? "Not Loaded",
+                    cls: status?.wrong_side_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Training Status",
+                    val: status?.wrong_side_stats?.training_status ?? "Not Trained",
+                    cls: "text-slate-300",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Triple Riding Statistics */}
+          <Card>
+            <CardHeader><CardTitle>Triple Riding Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Single Rider Count",
+                    val: status?.triple_riding_stats?.single_rider_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Double Riding Count",
+                    val: status?.triple_riding_stats?.double_riding_count ?? 0,
+                    cls: "text-brand-orange font-semibold",
+                  },
+                  {
+                    label: "Triple Riding Count",
+                    val: status?.triple_riding_stats?.triple_riding_count ?? 0,
+                    cls: (status?.triple_riding_stats?.triple_riding_count ?? 0) > 0 ? "text-status-red font-semibold animate-pulse" : "text-slate-300",
+                  },
+                  {
+                    label: "Unknown Count",
+                    val: status?.triple_riding_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.triple_riding_stats?.detection_status ?? "Inactive",
+                    cls: status?.triple_riding_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.triple_riding_stats?.model_status ?? "Not Loaded",
+                    cls: status?.triple_riding_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                  {
+                    label: "Association Status",
+                    val: status?.triple_riding_stats?.association_status ?? "Inactive",
+                    cls: status?.triple_riding_stats?.association_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Number Plate Detection (ANPR Stage 1) */}
+          <Card>
+            <CardHeader><CardTitle>Number Plate Detection Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "Detecting Plates",
+                    val: status?.number_plate_stats?.detecting_count ?? 0,
+                    cls: "text-brand-orange font-semibold",
+                  },
+                  {
+                    label: "Stable Plates",
+                    val: status?.number_plate_stats?.stable_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Crop Ready Count",
+                    val: status?.number_plate_stats?.crop_ready_count ?? 0,
+                    cls: "text-brand-cyan font-semibold",
+                  },
+                  {
+                    label: "Unknown Plates",
+                    val: status?.number_plate_stats?.unknown_count ?? 0,
+                    cls: "text-slate-400 font-mono",
+                  },
+                  {
+                    label: "Detection Status",
+                    val: status?.number_plate_stats?.detection_status ?? "Inactive",
+                    cls: status?.number_plate_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "Model Status",
+                    val: status?.number_plate_stats?.model_status ?? "Not Loaded",
+                    cls: status?.number_plate_stats?.model_status === "Loaded" ? "text-brand-cyan" : "text-status-red",
+                  },
+                ].map(({ label, val, cls }) => (
+                  <div key={label} className="px-5 py-2.5 flex justify-between">
+                    <span className="text-slate-400">{label}</span>
+                    <span className={cls}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* OCR Recognition (ANPR Stage 2) */}
+          <Card>
+            <CardHeader><CardTitle>OCR Recognition Stats</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-navy-accent/20 text-xs">
+                {[
+                  {
+                    label: "OCR Requests",
+                    val: status?.ocr_stats?.requests_count ?? 0,
+                    cls: "text-brand-cyan font-semibold",
+                  },
+                  {
+                    label: "Verified Plates",
+                    val: status?.ocr_stats?.verified_count ?? 0,
+                    cls: "text-status-green font-semibold",
+                  },
+                  {
+                    label: "Rejected OCR",
+                    val: status?.ocr_stats?.rejected_count ?? 0,
+                    cls: "text-status-red font-semibold",
+                  },
+                  {
+                    label: "Average Confidence",
+                    val: `${status?.ocr_stats?.avg_confidence ? Math.round(status.ocr_stats.avg_confidence) : 0}%`,
+                    cls: "text-brand-orange font-mono font-semibold",
+                  },
+                  {
+                    label: "Recognition Status",
+                    val: status?.ocr_stats?.detection_status ?? "Inactive",
+                    cls: status?.ocr_stats?.detection_status === "Active" ? "text-status-green" : "text-slate-400",
+                  },
+                  {
+                    label: "OCR Engine",
+                    val: status?.ocr_stats?.engine_name ?? "easyocr",
+                    cls: "text-brand-cyan uppercase font-semibold",
                   },
                 ].map(({ label, val, cls }) => (
                   <div key={label} className="px-5 py-2.5 flex justify-between">

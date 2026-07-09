@@ -13,6 +13,7 @@ execution_order:
   - "phone_detection"
   - "traffic_signal_detection"
   - "wrong_side_detection"
+  - "triple_riding_detection"
   - "number_plate_detection"
   - "ocr"
   - "violation_engine"
@@ -29,26 +30,111 @@ modules:
     enabled: true
     confidence_threshold: 0.50
   seat_belt_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   phone_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   traffic_signal_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
   wrong_side_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_track_age: 10
+    minimum_distance: 30.0
+    minimum_angle_difference: 135.0
+    minimum_history: 5
+    minimum_motion_confidence: 0.70
+    consecutive_confirmations: 3
+  rider_association:
+    minimum_iou: 0.15
+    maximum_distance: 150.0
+    association_score_threshold: 0.40
+    minimum_confidence: 0.50
+    maximum_passengers: 3
+  triple_riding_detection:
+    enabled: true
+    confidence_threshold: 0.50
+    minimum_association_confidence: 0.60
+    minimum_visible_riders: 1
+    minimum_track_age: 5
+    confirmation_frames: 3
+    maximum_riders: 2
+  plate_association:
+    minimum_plate_confidence: 0.50
+    minimum_association_score: 0.35
+    minimum_history_length: 3
+    stable_confirmation_frames: 5
+    maximum_plate_distance: 150.0
+    association_weights:
+      overlap: 0.60
+      distance: 0.40
   number_plate_detection:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_plate_confidence: 0.50
+    minimum_crop_width: 30
+    minimum_crop_height: 10
+    minimum_visibility: 0.10
+    minimum_crop_sharpness: 10.0
+    minimum_aspect_ratio: 1.5
+    maximum_aspect_ratio: 6.5
+    association_score: 0.35
+    stable_confirmation_frames: 5
+  plate_recognition:
+    minimum_ocr_confidence: 0.50
+    minimum_votes: 3
+    minimum_history: 3
+    minimum_validation_score: 0.60
+    maximum_history: 15
+    normalization_rules: true
   ocr:
-    enabled: false
+    enabled: true
+    ocr_engine: "easyocr"
     confidence_threshold: 0.50
+    minimum_ocr_confidence: 0.50
+    maximum_crop_rotation: 15.0
+    batch_size: 4
+    gpu: false
+    language: "en"
   violation_engine:
-    enabled: false
+    enabled: true
     confidence_threshold: 0.50
+    minimum_decision_confidence: 0.50
+    helmet_threshold: 0.50
+    seatbelt_threshold: 0.50
+    phone_threshold: 0.50
+    wrong_side_threshold: 0.50
+    signal_threshold: 0.50
+    triple_riding_threshold: 0.50
+    severities:
+      helmet: "Medium"
+      seatbelt: "Low"
+      phone: "Medium"
+      wrong_side: "High"
+      signal: "Critical"
+      triple_riding: "High"
+  violation_aggregation:
+    history_length: 20
+    minimum_confidence: 0.50
+    minimum_frames: 3
+    context_timeout: 5.0
+    maximum_history: 50
+    aggregation_weights:
+      helmet: 0.80
+      seatbelt: 0.80
+      phone: 0.85
+      wrong_side: 0.90
+      signal: 0.90
+      triple_riding: 0.85
+  evidence_generation:
+    enabled: true
+    output_dir: "outputs/evidence"
+    image_format: "jpg"
+    jpeg_quality: 90
+    camera_id: "CAM_MUM_01"
+    location: "GPS: 19.0760, 72.8777"
 
 # Visualization Options
 visualization:

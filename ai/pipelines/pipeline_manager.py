@@ -17,6 +17,9 @@ from ai.pipelines.result_object import PipelineResult
 from ai.pipelines.registry import module_registry
 from ai.pipelines.performance_monitor import PerformanceMonitor
 from backend.app.services.inference_service import inference_service
+from ai.services.violation_aggregation_service import violation_aggregation_service
+from ai.violations.evidence_generator import evidence_generator
+from shared.schemas.violation_record import ViolationRecord
 
 
 class PipelineManager:
@@ -247,6 +250,7 @@ class PipelineManager:
         # Stage 6 — Result Aggregation
         # -------------------------------------------------------------
         # Consolidate results from module context.metadata into metadata
+        violation_aggregation_service.update_from_context(context)
         
         # -------------------------------------------------------------
         # Stage 7 — Visualization (drawing placeholders)
@@ -256,6 +260,17 @@ class PipelineManager:
         # -------------------------------------------------------------
         # Stage 8 — Output
         # -------------------------------------------------------------
+        # Generate evidence for confirmed violation records
+        if "violation_engine" in context.metadata:
+            records_dict = context.metadata["violation_engine"].get("records", [])
+            violation_records = []
+            for r_dict in records_dict:
+                violation_records.append(ViolationRecord(**r_dict))
+            
+            if violation_records:
+                evidence_records = evidence_generator.process_evidence(violation_records, context)
+                context.metadata["evidence_records"] = [rec.to_dict() for rec in evidence_records]
+
         t_end = time.time()
         total_duration = (t_end - t_start) * 1000.0
         

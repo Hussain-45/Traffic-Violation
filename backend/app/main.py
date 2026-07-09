@@ -56,6 +56,17 @@ async def log_requests_middleware(request: Request, call_next):
         logger.error(f"HTTP {request.method} {request.url.path} failed - Duration: {process_time:.2f}ms - Error: {str(e)}")
         raise e
 
+# Security Headers Middleware setup
+@app.middleware("http")
+async def add_security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = "default-src 'self' http://localhost:8000; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: http://localhost:8000; connect-src 'self' ws://localhost:8000 http://localhost:8000;"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # CORS Middleware setup
 # Enable local React dev server and production domains
 app.add_middleware(
@@ -91,6 +102,10 @@ app.include_router(notifications.router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def startup_event():
+    # Validate environment state
+    from backend.app.utils.env_validator import validate_environment
+    validate_environment()
+
     # Setup tables and seed default dataset
     print("[Startup] Initializing Database Schema...")
     Base.metadata.create_all(bind=engine)
