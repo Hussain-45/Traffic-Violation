@@ -204,6 +204,10 @@ class CameraManager:
         last_ts = 0.0
 
         while self.running:
+            if getattr(self, "paused", False):
+                time.sleep(0.05)
+                continue
+
             raw_frame = None
             ts = 0.0
 

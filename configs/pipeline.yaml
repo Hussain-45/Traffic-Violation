@@ -1,146 +1,141 @@
-# Centralized AI Pipeline Configuration
-
-# Global settings
 debug_mode: true
-logging_level: "INFO"
-
-# Execution order of pipeline modules
 execution_order:
-  - "vehicle_detection"
-  - "vehicle_tracking"
-  - "helmet_detection"
-  - "seat_belt_detection"
-  - "phone_detection"
-  - "traffic_signal_detection"
-  - "wrong_side_detection"
-  - "triple_riding_detection"
-  - "number_plate_detection"
-  - "ocr"
-  - "violation_engine"
-
-# Dynamic AI Modules activation state and parameters
+- vehicle_detection
+- vehicle_tracking
+- helmet_detection
+- seat_belt_detection
+- phone_detection
+- traffic_signal_detection
+- wrong_side_detection
+- triple_riding_detection
+- number_plate_detection
+- ocr
+- violation_engine
+logging_level: INFO
 modules:
-  vehicle_detection:
-    enabled: true
-    confidence_threshold: 0.45
-  vehicle_tracking:
-    enabled: true
-    confidence_threshold: 0.45
+  evidence_generation:
+    camera_id: CAM_MUM_01
+    enabled: false
+    image_format: jpg
+    jpeg_quality: 90
+    location: 'GPS: 19.0760, 72.8777'
+    output_dir: outputs/evidence
   helmet_detection:
+    confidence_threshold: 0.5
     enabled: true
-    confidence_threshold: 0.50
-  seat_belt_detection:
+  number_plate_detection:
+    association_score: 0.35
+    confidence_threshold: 0.5
     enabled: true
-    confidence_threshold: 0.50
+    maximum_aspect_ratio: 6.5
+    minimum_aspect_ratio: 1.5
+    minimum_crop_height: 10
+    minimum_crop_sharpness: 10.0
+    minimum_crop_width: 30
+    minimum_plate_confidence: 0.5
+    minimum_visibility: 0.1
+    stable_confirmation_frames: 5
+  ocr:
+    batch_size: 4
+    confidence_threshold: 0.5
+    enabled: true
+    gpu: false
+    language: en
+    maximum_crop_rotation: 15.0
+    minimum_ocr_confidence: 0.5
+    ocr_engine: easyocr
   phone_detection:
+    confidence_threshold: 0.5
     enabled: true
-    confidence_threshold: 0.50
-  traffic_signal_detection:
-    enabled: true
-    confidence_threshold: 0.50
-  wrong_side_detection:
-    enabled: true
-    confidence_threshold: 0.50
-    minimum_track_age: 10
-    minimum_distance: 30.0
-    minimum_angle_difference: 135.0
-    minimum_history: 5
-    minimum_motion_confidence: 0.70
-    consecutive_confirmations: 3
-  rider_association:
-    minimum_iou: 0.15
-    maximum_distance: 150.0
-    association_score_threshold: 0.40
-    minimum_confidence: 0.50
-    maximum_passengers: 3
-  triple_riding_detection:
-    enabled: true
-    confidence_threshold: 0.50
-    minimum_association_confidence: 0.60
-    minimum_visible_riders: 1
-    minimum_track_age: 5
-    confirmation_frames: 3
-    maximum_riders: 2
   plate_association:
-    minimum_plate_confidence: 0.50
+    association_weights:
+      distance: 0.4
+      overlap: 0.6
+    enabled: false
+    maximum_plate_distance: 150.0
     minimum_association_score: 0.35
     minimum_history_length: 3
-    stable_confirmation_frames: 5
-    maximum_plate_distance: 150.0
-    association_weights:
-      overlap: 0.60
-      distance: 0.40
-  number_plate_detection:
-    enabled: true
-    confidence_threshold: 0.50
-    minimum_plate_confidence: 0.50
-    minimum_crop_width: 30
-    minimum_crop_height: 10
-    minimum_visibility: 0.10
-    minimum_crop_sharpness: 10.0
-    minimum_aspect_ratio: 1.5
-    maximum_aspect_ratio: 6.5
-    association_score: 0.35
+    minimum_plate_confidence: 0.5
     stable_confirmation_frames: 5
   plate_recognition:
-    minimum_ocr_confidence: 0.50
-    minimum_votes: 3
-    minimum_history: 3
-    minimum_validation_score: 0.60
+    enabled: false
     maximum_history: 15
+    minimum_history: 3
+    minimum_ocr_confidence: 0.5
+    minimum_validation_score: 0.6
+    minimum_votes: 3
     normalization_rules: true
-  ocr:
+  rider_association:
+    association_score_threshold: 0.4
+    enabled: false
+    maximum_distance: 150.0
+    maximum_passengers: 3
+    minimum_confidence: 0.5
+    minimum_iou: 0.15
+  seat_belt_detection:
+    confidence_threshold: 0.5
     enabled: true
-    ocr_engine: "easyocr"
-    confidence_threshold: 0.50
-    minimum_ocr_confidence: 0.50
-    maximum_crop_rotation: 15.0
-    batch_size: 4
-    gpu: false
-    language: "en"
-  violation_engine:
+  traffic_signal_detection:
+    confidence_threshold: 0.5
     enabled: true
-    confidence_threshold: 0.50
-    minimum_decision_confidence: 0.50
-    helmet_threshold: 0.50
-    seatbelt_threshold: 0.50
-    phone_threshold: 0.50
-    wrong_side_threshold: 0.50
-    signal_threshold: 0.50
-    triple_riding_threshold: 0.50
-    severities:
-      helmet: "Medium"
-      seatbelt: "Low"
-      phone: "Medium"
-      wrong_side: "High"
-      signal: "Critical"
-      triple_riding: "High"
+  triple_riding_detection:
+    confidence_threshold: 0.5
+    confirmation_frames: 3
+    enabled: true
+    maximum_riders: 2
+    minimum_association_confidence: 0.6
+    minimum_track_age: 5
+    minimum_visible_riders: 1
+  vehicle_detection:
+    confidence_threshold: 0.45
+    enabled: true
+  vehicle_tracking:
+    confidence_threshold: 0.45
+    enabled: true
   violation_aggregation:
-    history_length: 20
-    minimum_confidence: 0.50
-    minimum_frames: 3
-    context_timeout: 5.0
-    maximum_history: 50
     aggregation_weights:
-      helmet: 0.80
-      seatbelt: 0.80
+      helmet: 0.8
       phone: 0.85
-      wrong_side: 0.90
-      signal: 0.90
+      seatbelt: 0.8
+      signal: 0.9
       triple_riding: 0.85
-  evidence_generation:
+      wrong_side: 0.9
+    context_timeout: 5.0
+    enabled: false
+    history_length: 20
+    maximum_history: 50
+    minimum_confidence: 0.5
+    minimum_frames: 3
+  violation_engine:
+    confidence_threshold: 0.5
     enabled: true
-    output_dir: "outputs/evidence"
-    image_format: "jpg"
-    jpeg_quality: 90
-    camera_id: "CAM_MUM_01"
-    location: "GPS: 19.0760, 72.8777"
-
-# Visualization Options
+    helmet_threshold: 0.5
+    minimum_decision_confidence: 0.5
+    phone_threshold: 0.5
+    seatbelt_threshold: 0.5
+    severities:
+      helmet: Medium
+      phone: Medium
+      seatbelt: Low
+      signal: Critical
+      triple_riding: High
+      wrong_side: High
+    signal_threshold: 0.5
+    triple_riding_threshold: 0.5
+    wrong_side_threshold: 0.5
+  wrong_side_detection:
+    confidence_threshold: 0.5
+    consecutive_confirmations: 3
+    enabled: true
+    minimum_angle_difference: 135.0
+    minimum_distance: 30.0
+    minimum_history: 5
+    minimum_motion_confidence: 0.7
+    minimum_track_age: 10
 visualization:
   draw_boxes: true
+  draw_heatmap: false
   draw_ids: true
   draw_labels: true
   draw_roi: true
   draw_trails: false
-  draw_heatmap: false

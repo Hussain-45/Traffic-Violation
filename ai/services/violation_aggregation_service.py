@@ -241,10 +241,12 @@ class ViolationAggregationService:
                 signal_stats = context.metadata.get("traffic_signal_detection", {})
                 is_light_red = False
                 red_light_conf = 0.0
-                for sig_id, sig_data in signal_stats.items():
-                    if sig_data.get("status") == "Red":
-                        is_light_red = True
-                        red_light_conf = max(red_light_conf, sig_data.get("confidence", 0.0))
+                if isinstance(signal_stats, dict):
+                    for sig_id, sig_data in signal_stats.items():
+                        if isinstance(sig_data, dict):
+                            if sig_data.get("status") == "Red":
+                                is_light_red = True
+                                red_light_conf = max(red_light_conf, sig_data.get("confidence", 0.0))
 
                 if is_light_red:
                     w = context.raw_frame.shape[1] if context.raw_frame is not None else 1920

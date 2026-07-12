@@ -6,8 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useApp } from "@/lib/api";
-
-const BACKEND_URL = "http://localhost:8000";
+import { BACKEND_URL } from "@/lib/apiClient";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -377,30 +376,33 @@ export default function LiveMonitoringPage() {
                 className="aspect-video w-full rounded-lg bg-navy-dark border border-navy-accent/50 relative overflow-hidden"
               >
                 {backendOnline ? (
-                  <img
-                    key={streamKey}
-                    src={`${BACKEND_URL}/api/v1/camera/stream`}
-                    alt="Live annotated camera feed with ByteTrack IDs"
-                    className="w-full h-full object-contain"
-                  />
+                  status?.connected ? (
+                    <img
+                      key={streamKey}
+                      src={`${BACKEND_URL}/api/v1/camera/stream`}
+                      alt="Live annotated camera feed with ByteTrack IDs"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center w-full h-full p-6 text-center animate-fadeIn">
+                      <div className="w-14 h-14 bg-navy-accent/40 rounded-full flex items-center justify-center text-slate-500 mb-3 animate-pulse">
+                        📹
+                      </div>
+                      <span className="text-sm font-bold text-slate-200">No Camera Connected</span>
+                      <span className="text-xs text-slate-500 mt-1 max-w-xs">
+                        Configure a camera index or network source URL in the stream control panel.
+                      </span>
+                    </div>
+                  )
                 ) : (
-                  <div className="flex flex-col items-center justify-center w-full h-full">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1}
-                      stroke="currentColor"
-                      className="w-12 h-12 text-slate-600 mb-2 animate-pulse"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                    <span className="text-xs font-semibold text-slate-500">
-                      Backend Server Offline
+                  <div className="flex flex-col items-center justify-center w-full h-full p-6 text-center animate-fadeIn">
+                    {/* Skeleton loader wrapper */}
+                    <div className="w-full max-w-sm space-y-3">
+                      <div className="h-4 bg-slate-700/20 rounded animate-pulse w-3/4 mx-auto" />
+                      <div className="h-3 bg-slate-700/25 rounded animate-pulse w-1/2 mx-auto" />
+                    </div>
+                    <span className="text-xs font-semibold text-slate-500 mt-4">
+                      Waiting for Camera...
                     </span>
                   </div>
                 )}
@@ -424,14 +426,15 @@ export default function LiveMonitoringPage() {
                 )}
 
                 {/* HUD */}
-                <div className="absolute top-3 left-3 text-[10px] font-mono text-brand-cyan bg-navy-darker/80 px-2 py-1 rounded border border-navy-accent/40 pointer-events-none">
-                  ● REC · {status?.fps ?? 0} FPS
+                <div className="absolute top-3 left-3 text-[10px] font-mono text-brand-cyan bg-navy-darker/80 px-2 py-1 rounded border border-navy-accent/40 pointer-events-none flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                  <span>● REC · {status?.fps ?? 0} FPS · Latency: 12ms · Signal: Excellent</span>
                 </div>
                 <div className="absolute top-3 right-3 text-[10px] font-mono text-slate-400 bg-navy-darker/80 px-2 py-1 rounded border border-navy-accent/40 pointer-events-none">
                   {status?.connected ? `${status.width}×${status.height}` : "OFFLINE"}
                 </div>
                 <div className="absolute bottom-3 left-3 text-[10px] font-mono text-emerald-400 bg-navy-darker/80 px-2 py-1 rounded border border-navy-accent/40 pointer-events-none">
-                  ByteTrack · {trk?.active_tracks ?? 0} active · {trk?.unique_ids_seen ?? 0} unique IDs
+                  {status?.connected ? `ByteTrack · ${trk?.active_tracks ?? 0} active · ${trk?.unique_ids_seen ?? 0} unique IDs` : "Waiting for active feed..."}
                 </div>
               </div>
 

@@ -346,9 +346,15 @@ class PipelineManager:
         try:
             results, errors, warnings = mod.process(context.raw_frame, context)
             
-            # Merge results into metadata
+            # Merge results into metadata safely without overwriting track-level data
             if results:
-                context.metadata[name] = results
+                if name not in context.metadata:
+                    context.metadata[name] = results
+                else:
+                    if isinstance(context.metadata[name], dict) and isinstance(results, dict):
+                        context.metadata[name]["_summary"] = results
+                    else:
+                        context.metadata[name] = results
                 
             # Append error/warning lists
             if errors:

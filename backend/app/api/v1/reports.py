@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Background
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from pydantic import BaseModel
 import os
 import zipfile
 import io
@@ -162,3 +163,57 @@ def delete_report_file(
     if not deleted:
         raise HTTPException(status_code=404, detail="Report record not found.")
     return {"success": True, "message": "Report deleted successfully."}
+
+
+class FrontendReportCreate(BaseModel):
+    title: str
+    report_type: str
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    file_format: Optional[str] = "csv"
+
+
+@router.post("", response_model=ReportResponse, status_code=status.HTTP_201_CREATED)
+def generate_report_frontend(
+    payload: FrontendReportCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Fallback endpoint for frontend POST /reports."""
+    from backend.app.schemas.report_schema import ReportCreate as V1ReportCreate, ReportFilterSchema
+    v1_payload = V1ReportCreate(
+        title=payload.title,
+        report_type=payload.report_type,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        format=payload.file_format,
+        filters=ReportFilterSchema()
+    )
+    return report_controller.generate_report(db, current_user.id, v1_payload, background_tasks)
+
+
+@router.delete("/{report_id}")
+def delete_report_frontend(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Fallback endpoint for frontend DELETE /reports/{report_id}."""
+    deleted = report_controller.delete_report(db, report_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Report record not found.")
+    return {"success": True, "message": "Report deleted successfully."}
+
+
+@router.get("/{report_id}", response_model=ReportResponse)
+def get_report_details(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retrieves specific report metadata details."""
+    report = report_controller.get_report(db, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report record not found.")
+    return report

@@ -57,6 +57,31 @@ export function Sidebar() {
       ),
     },
     {
+      name: "Video Analysis",
+      path: "/video-analysis",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-5 h-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 12.75 9.75 16.25V9.25l6 3.5Z"
+          />
+        </svg>
+      ),
+    },
+    {
       name: "Violations",
       path: "/violations",
       icon: (

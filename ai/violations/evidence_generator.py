@@ -136,6 +136,7 @@ class EvidenceGenerator:
 
                 # Calculate SHA-256 Hash of the annotated frame for tamper-proofing
                 hasher = hashlib.sha256()
+                hasher.update(evidence_id.encode('utf-8'))
                 if os.path.exists(annotated_path):
                     with open(annotated_path, "rb") as f:
                         hasher.update(f.read())

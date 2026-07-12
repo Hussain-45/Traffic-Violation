@@ -123,12 +123,31 @@ class WrongSideDetectionModule(BaseAIModule):
                             state.confidence >= min_motion_conf
                         )
 
+                        logger.info(f"Vehicle #{track_id} motion metrics | "
+                                    f"track_age: {state.track_age}/{min_track_age} | "
+                                    f"distance: {state.total_distance:.1f}/{min_distance} | "
+                                    f"history: {state.history_length}/{min_history} | "
+                                    f"confidence: {state.confidence:.2f}/{min_motion_conf} | "
+                                    f"validated: {validated} | "
+                                    f"angle: {state.travel_angle}")
+
                         current_state = "Unknown"
 
                         if validated and state.travel_angle is not None:
-                            # 3. Fetch lane orientation angle from central RoadSceneService
-                            # Default lane_id = 0, expected direction = 90.0 degrees (downward flow)
-                            expected_angle = RoadSceneService.get_lane_orientation(lane_id=0)
+                            # 3. Fetch lane orientation angle dynamically
+                            camera_id = context.config.get("camera_id")
+                            is_horizontal = (camera_id == "CAM-VIDEO") or (self.config.get("road_type") == "horizontal")
+                            
+                            if is_horizontal:
+                                # For horizontal roads, Y coordinate determines direction:
+                                # Top half (y < 300) traffic flows rightward (0.0 degrees)
+                                # Bottom half (y >= 300) traffic flows leftward (180.0 degrees)
+                                cy = state.current_position.y if (state.current_position and state.current_position.y is not None) else ((box[1] + box[3]) / 2)
+                                expected_angle = 0.0 if cy < 300.0 else 180.0
+                            else:
+                                expected_angle = self.config.get("expected_angle")
+                                if expected_angle is None:
+                                    expected_angle = RoadSceneService.get_lane_orientation(lane_id=0)
                             
                             # Compare heading angles
                             diff = abs(state.travel_angle - expected_angle) % 360

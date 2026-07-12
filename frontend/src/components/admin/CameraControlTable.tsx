@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
+import { BACKEND_URL } from "@/lib/apiClient";
 
 interface CameraItem {
   id: str;
@@ -118,7 +119,7 @@ export function CameraControlTable({ cameras, onToggle, onRestart }: CameraTable
                   </div>
                   {selectedCam.is_active_feed ? (
                     <img
-                      src={`http://localhost:8000/api/v1/camera/stream?t=${Date.now()}`}
+                      src={`${BACKEND_URL}/api/v1/camera/stream?t=${Date.now()}`}
                       alt="Camera Feed"
                       className="w-full h-full object-cover"
                     />

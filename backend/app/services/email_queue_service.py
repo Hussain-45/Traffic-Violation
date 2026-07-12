@@ -177,6 +177,20 @@ class EmailQueueService:
         email_service.close_smtp(server)
         return sent_count
 
+    def get_queue_statistics(self, db: Session) -> Dict[str, int]:
+        """Calculates email queue statistics from the database."""
+        from backend.app.models.email_log_model import EmailLogModel
+        total = db.query(EmailLogModel).count()
+        pending = db.query(EmailLogModel).filter(EmailLogModel.status.in_(["pending", "retrying"])).count()
+        sent = db.query(EmailLogModel).filter(EmailLogModel.status == "sent").count()
+        failed = db.query(EmailLogModel).filter(EmailLogModel.status == "failed").count()
+        return {
+            "total_emails": total,
+            "pending_emails": pending,
+            "sent_emails": sent,
+            "failed_emails": failed
+        }
+
 
 # Singleton instance
 email_queue_service = EmailQueueService()

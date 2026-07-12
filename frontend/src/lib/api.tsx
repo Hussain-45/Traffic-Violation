@@ -1,24 +1,31 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-const BACKEND_BASE_URL = "http://localhost:8000";
+import { BACKEND_URL, fetchWithTimeout } from "./apiClient";
 
 export async function checkBackendHealth(): Promise<boolean> {
-  try {
-    const res = await fetch(`${BACKEND_BASE_URL}/api/v1/health`, {
-      method: "GET",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data.status === "ok";
-  } catch (error) {
-    return false;
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetchWithTimeout(`${BACKEND_URL}/api/v1/health`, {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: 5000, // 5s timeout for health checks
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === "ok") return true;
+      }
+    } catch (error) {
+      if (attempt === maxRetries) return false;
+    }
+    // Small delay between retries
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
+  return false;
 }
 
 interface AppContextProps {
@@ -32,7 +39,7 @@ interface AppContextProps {
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [backendOnline, setBackendOnline] = useState<boolean>(false);
+  const [backendOnline, setBackendOnline] = useState<boolean>(true); // start as true to prevent flash offline skeletons
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
   const triggerHealthCheck = async () => {

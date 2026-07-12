@@ -14,6 +14,9 @@ from backend.app.api.v1.router import api_router
 setup_app_logging()
 
 
+from backend.app.database import engine, Base
+from backend.app.utils.seed import seed_db
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -30,6 +33,13 @@ async def lifespan(app: FastAPI):
     )
     logger.info(f"   - YOLO Model: {'[SET]' if settings.YOLO_MODEL else '[EMPTY]'}")
     logger.info("=========================================")
+
+    # Initialize Database Schema & Seed Data
+    logger.info("[Startup] Initializing Database Schema...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("[Startup] Seeding database with demo data...")
+    seed_db()
+    logger.info("[Startup] Ready to receive traffic signals.")
 
     yield
 
@@ -50,6 +60,10 @@ app = FastAPI(
 
 # Register Centralized Exception Handlers
 register_exception_handlers(app)
+
+from fastapi.staticfiles import StaticFiles
+app.mount("/data", StaticFiles(directory="data"), name="data")
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # Register Middleware
 app.add_middleware(

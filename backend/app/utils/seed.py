@@ -1,5 +1,7 @@
 import datetime
 import random
+import os
+import shutil
 from sqlalchemy.orm import Session
 from backend.app.database import engine, Base, SessionLocal
 from backend.app.models import User, Camera, Vehicle, Violation, FineRule, Payment, ActivityLog, Location, Setting
@@ -56,6 +58,8 @@ def seed_db():
         ]
         db.add_all(users)
         db.commit()
+
+        admin_user = db.query(User).filter(User.username == "admin").first()
 
         # 2. Locations
         locations = [
@@ -195,6 +199,19 @@ def seed_db():
             
         db.commit()
         
+        # Copy a mock image if it exists to serve as evidence image
+        os.makedirs("data/uploads/images", exist_ok=True)
+        mock_dest = "data/uploads/images/mock_evidence.jpg"
+        has_mock_dest = False
+        for path in ["venv/Lib/site-packages/ultralytics/assets/bus.jpg", "outputs/evidence/cdc1d672-0771-4452-889b-11132f943053_original.jpg"]:
+            if os.path.exists(path):
+                try:
+                    shutil.copy(path, mock_dest)
+                    has_mock_dest = True
+                    break
+                except Exception:
+                    pass
+
         # Build violations
         current_time = datetime.datetime.utcnow()
         cameras_pool = db.query(Camera).filter(Camera.status == "online").all()
@@ -232,6 +249,7 @@ def seed_db():
                 fine_amount=fine_amount,
                 status=status,
                 confidence_score=round(random.uniform(0.75, 0.99), 2),
+                evidence_image_path=mock_dest if has_mock_dest else None,
                 officer_notes="Auto-detected by AI system." if status != "resolved" else "Reviewed and settled."
             )
             db.add(violation)

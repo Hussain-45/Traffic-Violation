@@ -271,6 +271,7 @@ class AdminService:
                 updates["AI_CONFIDENCE_THRESHOLD"] = str(ai["confidence_threshold"])
             if "speed_limit_kmh" in ai:
                 settings.SPEED_LIMIT_KMH = float(ai["speed_limit_kmh"])
+                updates["SPEED_LIMIT_KMH"] = str(ai["speed_limit_kmh"])
 
             # Sync YAML config for modules enablement
             if "enabled_modules" in ai and os.path.exists(self.pipeline_yaml_path):

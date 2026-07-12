@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useApp } from "../../lib/api";
-import { SystemStatusCard } from "../../components/admin/SystemStatusCard";
+import { useAuth } from "@/components/auth/AuthContext";
+import { useApp } from "@/lib/api";
+import { BACKEND_URL } from "@/lib/apiClient";
+import { useEffect, useState } from "react";
 import { CameraControlTable } from "../../components/admin/CameraControlTable";
-import { UserManagementTable } from "../../components/admin/UserManagementTable";
 import { ConfigSettingsForm } from "../../components/admin/ConfigSettingsForm";
 import { LogViewerConsole } from "../../components/admin/LogViewerConsole";
+import { SystemStatusCard } from "../../components/admin/SystemStatusCard";
+import { UserManagementTable } from "../../components/admin/UserManagementTable";
 import { Button } from "../../components/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/Card";
-
-const BACKEND_URL = "http://localhost:8000";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 
 interface NotificationEvent {
   level: string;
@@ -20,19 +20,14 @@ interface NotificationEvent {
 }
 
 export default function AdminDashboardPage() {
+  const { token, user, logout } = useAuth();
   const { backendOnline } = useApp();
-  const [token, setToken] = useState<string | null>(null);
-  const [usernameInput, setUsernameInput] = useState("");
-  const [passwordInput, setPasswordInput] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(false);
-  const [userRole, setUserRole] = useState<string>("viewer");
 
   // Tab State
   const [activeTab, setActiveTab] = useState("overview");
 
   // Live Refresh Configs
-  const [refreshInterval, setRefreshInterval] = useState<number>(5000); // in ms (5s default)
+  const [refreshInterval, setRefreshInterval] = useState<number>(5000); // in ms
   const [countdown, setCountdown] = useState<number>(5);
 
   // API Data States
@@ -48,16 +43,6 @@ export default function AdminDashboardPage() {
   const [loadingData, setLoadingData] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Load token and role from localStorage
-  useEffect(() => {
-    const savedToken = localStorage.getItem("admin_access_token");
-    const savedRole = localStorage.getItem("admin_role");
-    if (savedToken) {
-      setToken(savedToken);
-      setUserRole(savedRole || "viewer");
-    }
-  }, []);
-
   // Fetch admin dashboard details
   const fetchAllAdminData = async () => {
     if (!token || !backendOnline) return;
@@ -72,7 +57,7 @@ export default function AdminDashboardPage() {
       // Fetch dashboard summary
       const summaryRes = await fetch(`${BACKEND_URL}/api/v1/admin/dashboard`, { headers });
       if (summaryRes.status === 401 || summaryRes.status === 403) {
-        handleLogout();
+        logout();
         return;
       }
       const summaryData = await summaryRes.json();
@@ -108,7 +93,7 @@ export default function AdminDashboardPage() {
       const logsData = await logsRes.json();
       setLogs(logsData);
 
-      // Simulate notifications generation from status
+      // Compile notifications
       const newAlerts: NotificationEvent[] = [];
       if (healthData && !healthData.database) {
         newAlerts.push({ level: "error", source: "database", message: "Database link lost.", timestamp: Date.now() });
@@ -128,6 +113,12 @@ export default function AdminDashboardPage() {
     }
   };
 
+  useEffect(() => {
+    if (token) {
+      fetchAllAdminData();
+    }
+  }, [token, backendOnline]);
+
   // Live Refresh interval handling
   useEffect(() => {
     if (!token || refreshInterval === 0) return;
@@ -146,64 +137,6 @@ export default function AdminDashboardPage() {
     return () => clearInterval(countdownTimer);
   }, [token, refreshInterval, backendOnline]);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoadingAuth(true);
-    setAuthError(null);
-
-    try {
-      // API expects application/x-www-form-urlencoded
-      const formData = new URLSearchParams();
-      formData.append("username", usernameInput);
-      formData.append("password", passwordInput);
-
-      const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Authentication failed.");
-      }
-
-      const data = await res.json();
-      localStorage.setItem("admin_access_token", data.access_token);
-      
-      // Decode JWT roughly to extract role (for demo/permissions client side)
-      let role = "admin"; // default fallback for admin login
-      try {
-        const payloadBase64 = data.access_token.split(".")[1];
-        const payload = JSON.parse(atob(payloadBase64));
-        role = payload.role || "admin";
-      } catch (e) {}
-
-      localStorage.setItem("admin_role", role);
-      setToken(data.access_token);
-      setUserRole(role);
-    } catch (err: any) {
-      setAuthError(err.message || "Invalid administrator credentials.");
-    } finally {
-      setLoadingAuth(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin_access_token");
-    localStorage.removeItem("admin_role");
-    setToken(null);
-    setUserRole("viewer");
-    setSummary(null);
-    setStatusData(null);
-    setCameras([]);
-    setUsers([]);
-    setSettings(null);
-    setLogs(null);
-  };
-
   // Camera Actions
   const handleToggleCamera = async (camera_id: string, enabled: boolean) => {
     if (!token) return;
@@ -217,7 +150,7 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ enabled }),
       });
       if (res.ok) {
-        await fetchAllAdminData();
+        fetchAllAdminData();
       }
     } catch (err) {
       console.error(err);
@@ -236,7 +169,7 @@ export default function AdminDashboardPage() {
       });
       if (res.ok) {
         alert("Camera restart signal triggered successfully.");
-        await fetchAllAdminData();
+        fetchAllAdminData();
       }
     } catch (err) {
       console.error(err);
@@ -256,7 +189,7 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ role, status }),
       });
       if (res.ok) {
-        await fetchAllAdminData();
+        fetchAllAdminData();
       }
     } catch (err) {
       console.error(err);
@@ -277,7 +210,7 @@ export default function AdminDashboardPage() {
       });
       if (res.ok) {
         alert("Configuration parameters updated dynamically.");
-        await fetchAllAdminData();
+        fetchAllAdminData();
       } else {
         alert("Failed to save configurations.");
       }
@@ -299,69 +232,15 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Render Login overlay if token is not active
-  if (!token) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <div className="bg-navy-light/40 border border-navy-accent/50 p-8 rounded-2xl w-full max-w-md shadow-2xl backdrop-blur-md">
-          <div className="text-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-tr from-brand-blue to-brand-cyan rounded-xl flex items-center justify-center font-bold text-lg text-white mx-auto shadow-lg shadow-brand-cyan/20">
-              🛡️
-            </div>
-            <h2 className="text-xl font-bold text-slate-100 mt-4">Administrator Access</h2>
-            <p className="text-xs text-slate-400 mt-1">Please log in to manage configuration and nodes.</p>
-          </div>
-
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
-            {authError && (
-              <div className="bg-status-red/10 border border-status-red/30 text-status-red text-xs p-3.5 rounded-lg font-medium">
-                ⚠️ {authError}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Username</label>
-              <input
-                type="text"
-                value={usernameInput}
-                onChange={(e) => setUsernameInput(e.target.value)}
-                className="w-full bg-navy-dark border border-navy-accent/50 text-slate-200 text-sm rounded-lg p-2.5 focus:outline-none focus:border-brand-cyan/50"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Password</label>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full bg-navy-dark border border-navy-accent/50 text-slate-200 text-sm rounded-lg p-2.5 focus:outline-none focus:border-brand-cyan/50"
-                required
-              />
-            </div>
-
-            <Button variant="primary" type="submit" className="w-full" disabled={loadingAuth}>
-              {loadingAuth ? "Authorizing access..." : "Authenticate Administrator"}
-            </Button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   // RBAC protection - Hide page if not admin/officer
-  if (userRole !== "admin" && userRole !== "officer") {
+  if (user?.role !== "admin" && user?.role !== "officer") {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6">
         <div className="text-5xl mb-4">🚫</div>
         <h2 className="text-xl font-bold text-slate-100">Privileged View Restricted</h2>
         <p className="text-sm text-slate-400 mt-2 max-w-sm">
-          Your account role ({userRole}) does not have administrative clearance to access settings or system controls.
+          Your account role does not have administrative clearance to access settings or system controls.
         </p>
-        <Button variant="secondary" className="mt-6" onClick={handleLogout}>
-          Authenticate with another account
-        </Button>
       </div>
     );
   }
@@ -377,7 +256,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Header section with logout and refresh interval controls */}
+      {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-navy-accent/30 pb-5">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
@@ -385,9 +264,8 @@ export default function AdminDashboardPage() {
           </h1>
           <p className="text-xs text-slate-400 mt-1">Configure active models, manage camera nodes, update users, and inspect logs.</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
-          {/* Configurable Live Refresh */}
           <div className="flex items-center gap-2 bg-navy-light px-3 py-1.5 rounded-lg border border-navy-accent/40 text-xs text-slate-300">
             <span>Interval:</span>
             <select
@@ -407,10 +285,6 @@ export default function AdminDashboardPage() {
 
           <Button variant="outline" size="sm" onClick={fetchAllAdminData}>
             🔄 Force Refresh
-          </Button>
-
-          <Button variant="secondary" size="sm" onClick={handleLogout}>
-            🔌 Log Out
           </Button>
         </div>
       </div>
@@ -498,19 +372,17 @@ export default function AdminDashboardPage() {
           { id: "settings", label: "Pipeline Settings", icon: "⚙️" },
           { id: "logs", label: "Audit Trails & Logs", icon: "📄" },
         ].map((tab) => {
-          // RBAC check: Only admins can manage users and settings
-          if (userRole !== "admin" && (tab.id === "users" || tab.id === "settings")) {
+          if (user?.role !== "admin" && (tab.id === "users" || tab.id === "settings")) {
             return null;
           }
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-3.5 text-sm font-medium transition-all duration-200 border-b-2 flex items-center gap-2 cursor-pointer ${
-                activeTab === tab.id
+              className={`pb-3.5 text-sm font-medium transition-all duration-200 border-b-2 flex items-center gap-2 cursor-pointer ${activeTab === tab.id
                   ? "border-brand-cyan text-brand-cyan"
                   : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
+                }`}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
@@ -533,11 +405,11 @@ export default function AdminDashboardPage() {
           />
         )}
 
-        {activeTab === "users" && userRole === "admin" && users && (
+        {activeTab === "users" && user?.role === "admin" && users && (
           <UserManagementTable users={users} onUpdate={handleUpdateUser} />
         )}
 
-        {activeTab === "settings" && userRole === "admin" && settings && (
+        {activeTab === "settings" && user?.role === "admin" && settings && (
           <ConfigSettingsForm settings={settings} onSave={handleSaveSettings} />
         )}
 

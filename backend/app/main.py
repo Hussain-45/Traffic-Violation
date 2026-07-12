@@ -7,7 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.app.config import settings
 from backend.app.database import engine, Base
-from backend.app.routes import auth, violations, cameras, dashboard, analytics, users, settings as settings_routes, locations, reports, fines, notifications
+from backend.app.routes import auth, violations, cameras, dashboard, users, settings as settings_routes, locations, fines, notifications, video_analysis
+from backend.app.api.v1 import analytics, reports
+from backend.app.api.v1.endpoints import health, camera
 from backend.app.utils.seed import seed_db
 
 # Configure structured system logger
@@ -60,7 +62,7 @@ async def log_requests_middleware(request: Request, call_next):
 @app.middleware("http")
 async def add_security_headers_middleware(request: Request, call_next):
     response = await call_next(request)
-    response.headers["Content-Security-Policy"] = "default-src 'self' http://localhost:8000; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: http://localhost:8000; connect-src 'self' ws://localhost:8000 http://localhost:8000;"
+    response.headers["Content-Security-Policy"] = "default-src 'self' http://localhost:8000 http://localhost:8001; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: http://localhost:8000 http://localhost:8001; connect-src 'self' ws://localhost:8000 ws://localhost:8001 http://localhost:8000 http://localhost:8001;"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -86,6 +88,7 @@ os.makedirs(os.path.join(settings.UPLOAD_DIR, "videos"), exist_ok=True)
 # Mount evidence/uploads directory statically
 # This allows the frontend to load images like: http://localhost:8000/data/uploads/images/...
 app.mount("/data", StaticFiles(directory="data"), name="data")
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # Register routers
 app.include_router(auth.router, prefix=settings.API_V1_STR)
@@ -99,6 +102,9 @@ app.include_router(locations.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
 app.include_router(fines.router, prefix=settings.API_V1_STR)
 app.include_router(notifications.router, prefix=settings.API_V1_STR)
+app.include_router(health.router, prefix=settings.API_V1_STR)
+app.include_router(camera.router, prefix=settings.API_V1_STR + "/camera")
+app.include_router(video_analysis.router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 def startup_event():

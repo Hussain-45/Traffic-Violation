@@ -141,3 +141,4 @@ from backend.app.models.email_log_model import EmailLogModel
 from backend.app.models.analytics_model import AnalyticsReportModel
 from backend.app.models.evidence_model import EvidenceModel
 from backend.app.models.report_model import Report
+from backend.app.models.video_analysis_model import AnalysisJob
