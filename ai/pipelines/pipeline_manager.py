@@ -20,6 +20,7 @@ from backend.app.services.inference_service import inference_service
 from ai.services.violation_aggregation_service import violation_aggregation_service
 from ai.violations.evidence_generator import evidence_generator
 from shared.schemas.violation_record import ViolationRecord
+from backend.app.services.database_service import database_service
 
 
 class PipelineManager:
@@ -270,6 +271,13 @@ class PipelineManager:
             if violation_records:
                 evidence_records = evidence_generator.process_evidence(violation_records, context)
                 context.metadata["evidence_records"] = [rec.to_dict() for rec in evidence_records]
+                
+                # Persist each record to the database
+                for ev_rec in evidence_records:
+                    try:
+                        database_service.insert_evidence(ev_rec)
+                    except Exception as e:
+                        logger.error(f"Failed to persist evidence record {ev_rec.evidence_id} to database: {e}")
 
         t_end = time.time()
         total_duration = (t_end - t_start) * 1000.0
